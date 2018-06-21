@@ -1,0 +1,26 @@
+LAYOUT ( MINWIDTH=50, MINHEIGHT=40, STYLE="main" )
+VBOX 
+GROUP (TEXT="")
+GRID
+{
+[splash  ]
+[username]
+[password]
+[cb      ]
+[spacer  ]
+[bt_login]
+}
+END #GRID
+END #GROUP
+END #VBOX
+END #LAYOUT
+
+ATTRIBUTES
+IMAGE splash:splash, IMAGE="splash", AUTOSCALE;
+EDIT username=FORMONLY.username, JUSTIFY=CENTER, PLACEHOLDER=%"common.per.Username";
+EDIT password=FORMONLY.password, INVISIBLE, JUSTIFY=CENTER, PLACEHOLDER=%"common.per.Password";
+CHECKBOX cb=FORMONLY.remember, NOT NULL, REQUIRED, VALUECHECKED="1", VALUEUNCHECKED="0", TEXT=%"common.per.Remember_Me";
+IMAGE spacer: spacer1, IMAGE="128x128_blank.png",STRETCH=BOTH, STYLE="noBorder";
+BUTTON bt_login : bt_login, TEXT=%"common.per.Login";
+
+END

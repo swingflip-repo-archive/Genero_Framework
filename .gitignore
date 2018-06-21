@@ -1,0 +1,8 @@
+#File Types
+.DS_Store
+*.4pwcfg
+*.4pwvs
+*.4pwdb
+
+#Build Folders
+bin/
