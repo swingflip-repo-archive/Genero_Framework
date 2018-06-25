@@ -3,8 +3,9 @@ dbi.default.driver = "dbmsqt"
 dbi.database.local_db.source = "local_db.db"
 
 #Application localisation
-fglrun.localization.file.count = 1
+fglrun.localization.file.count = 2
 fglrun.localization.file.1.name = "common_per.42s"
+fglrun.localization.file.1.name = "common_string.42s"
 
 #Only enable warnKeyNotFound for debugging.
 fglrun.localization.warnKeyNotFound = TRUE

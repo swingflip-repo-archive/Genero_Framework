@@ -19,7 +19,8 @@ IMPORT util
       online_pingURL STRING,                          #URL of public site to test internet connectivity (i.e. http://www.google.com) 
       date_format STRING,                             #Datetime format. i.e.  "%d/%m/%Y %H:%M"
       default_language STRING,                        #The default language used within the application (i.e. EN)
-      local_images_available DYNAMIC ARRAY OF CHAR(2) #Available localisations for images.
+      local_images_available DYNAMIC ARRAY OF CHAR(2),#Available localisations for images.
+      debug_level SMALLINT                            #Debug level // 0 - None, 1 - Verbose, 2 - 
     END RECORD,
 
     global_var RECORD
@@ -54,7 +55,7 @@ IMPORT util
   PRIVATE DEFINE
     m_require_app_reload SMALLINT
   
-MAIN #*************************************************************************#
+MAIN ###########################################################################
 
   DISPLAY "App Start - " || TIME( CURRENT )
   
@@ -70,9 +71,9 @@ MAIN #*************************************************************************#
 
   DISPLAY "App Finish - " || TIME( CURRENT )
 
-END MAIN #*********************************************************************#
+END MAIN #######################################################################
 
-FUNCTION load_localisation(f_locale STRING, f_pre_window SMALLINT)
+FUNCTION load_localisation(f_locale STRING, f_pre_window SMALLINT) #***********#
   DEFINE
     f_localisation_path STRING,
     f_stringbuffer base.StringBuffer,
@@ -112,4 +113,4 @@ FUNCTION load_localisation(f_locale STRING, f_pre_window SMALLINT)
 
   RETURN f_require_reload
     
-END FUNCTION
+END FUNCTION #*****************************************************************#

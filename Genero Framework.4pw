@@ -98,6 +98,7 @@
       <VirtualFolder label="Forms">
         <File filePath="src/forms/login.per"/>
       </VirtualFolder>
+      <File filePath="src/application_main.4gl"/>
       <File filePath="src/main.4gl"/>
     </Application>
     <Library binaryName="Config" id="362164715" label="Config">
@@ -111,6 +112,7 @@
     <Library binaryName="Localisation Files (defaults)" id="-1082203495" label="Localisation Files (defaults)">
       <VirtualFolder label="defaults (en)">
         <File filePath="src/lang_defaults/common_per.str"/>
+        <File filePath="src/lang_defaults/common_string.str"/>
       </VirtualFolder>
     </Library>
     <Library binaryName="Resources" id="159917928" label="Resources"/>
