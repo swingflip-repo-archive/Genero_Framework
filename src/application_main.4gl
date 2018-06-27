@@ -4,7 +4,8 @@
 ################################################################################
 IMPORT os
 IMPORT util
-IMPORT FGL main
+IMPORT FGL function_lib
+IMPORT FGL fgldialog
 
   PRIVATE DEFINE #Common use Module Variables
     TERMINATE SMALLINT,
@@ -50,11 +51,16 @@ FUNCTION initialise_app() #****************************************************#
     LET m_index = m_index + 1
   END WHILE
 
-  CALL sync_config("app.config",FALSE)
-  CALL initialize_globals()
+  IF global_config.debug_level >= 1 
+  THEN
+    CALL function_lib.sync_config("app.config",TRUE)
+  ELSE
+    CALL function_lib.sync_config("app.config",FALSE)
+  END IF
+  CALL function_lib.initialize_publics()
     RETURNING m_ok
 
-  IF global_config.debug_level = 1 
+  IF global_config.debug_level >= 2 
   THEN
     DISPLAY "\nStarting up " || global_var.application_title || " " || global_var.application_version || "..."
     
@@ -79,51 +85,52 @@ FUNCTION initialise_app() #****************************************************#
     END IF
   END IF
           
-        IF m_ok = FALSE
+  IF m_ok = FALSE
+  THEN
+    CALL fgl_winMessage(global_var.title, %"main.string.ERROR_1001", "stop")
+    EXIT PROGRAM 1001
+  END IF
+
+  IF global_config.enable_geolocation = TRUE
+  THEN
+    IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
+    THEN
+      DISPLAY "****************************************************************************************\n" ||
+              "WARNING: Set up error, track geolocation is enabled and you are not deploying in mobile.\n" ||
+              "****************************************************************************************\n"
+    ELSE
+      CALL ui.Interface.frontCall("mobile", "getGeolocation", [], [global_var.info.geo_status, global_var.info.geo_lat, global_var.info.geo_lon])
+      IF global_config.debug_level >= 1
+      THEN
+        DISPLAY "--Geolocation Tracking Enabled!--"
+        DISPLAY "Geolocation Tracking Status: " || global_var.info.geo_status
+        IF global_var.info.geo_status = "ok"
         THEN
-             CALL fgl_winmessage(global_var.g_title, %"main.string.ERROR_1001", "stop")
-             EXIT PROGRAM 1001
+          DISPLAY "Latitude: " || global_var.info.geo_lat
+          DISPLAY "Longitude: " || global_var.info.geo_lon
         END IF
+        DISPLAY "---------------------------------\n"
+      END IF
+    END IF
+  END IF
 
-        IF global_config.g_enable_geolocation = TRUE
-        THEN
-            IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
-            THEN
-                DISPLAY "****************************************************************************************\n" ||
-                        "WARNING: Set up error, track geolocation is enabled and you are not deploying in mobile.\n" ||
-                        "****************************************************************************************\n"
-            ELSE
-                CALL ui.Interface.frontCall("mobile", "getGeolocation", [], [global_var.info.geo_status, global_var.info.geo_lat, global_var.info.geo_lon])
-                DISPLAY "--Geolocation Tracking Enabled!--"
-                DISPLAY "Geolocation Tracking Status: " || global_var.info.geo_status
-                IF global_var.info.geo_status = "ok"
-                THEN
-                    DISPLAY "Latitude: " || global_var.info.geo_lat
-                    DISPLAY "Longitude: " || global_var.info.geo_lon
-                END IF
-                DISPLAY "---------------------------------\n"
-            END IF
-        END IF
+  CALL function_lib.test_connectivity(global_var.info.deployment_type)
+  #CALL function_lib.capture_local_stats(global_var.info.*)
+  #  RETURNING m_ok
 
-        CALL test_connectivity(global_var.info.deployment_type)
-        CALL capture_local_stats(global_var.info.*)
-            RETURNING m_ok
+  CLOSE WINDOW SCREEN #Just incase
 
-        CLOSE WINDOW SCREEN #Just incase
-        
-    #We are now initialised, we now just need to run each individual window functions...
-
-        IF global_config.g_enable_splash = TRUE AND global_config.g_splash_duration > 0
-        THEN
-            CALL run_splash_screen()
-        ELSE
-            IF global_config.g_enable_login = TRUE
-            THEN
-                CALL login_screen() 
-            ELSE
-                CALL open_application()
-            END IF
-        END IF
+  IF global_config.enable_splash = TRUE AND global_config.splash_duration > 0
+  THEN
+    CALL run_splash_screen()
+  ELSE
+    IF global_config.enable_login = TRUE
+    THEN
+      CALL login_screen() 
+    ELSE
+      CALL open_application()
+    END IF
+  END IF
     
 END FUNCTION
 
@@ -142,25 +149,25 @@ FUNCTION run_splash_screen() #Application Splashscreen window function
 
     INITIALIZE f_result TO NULL
     TRY 
-        CALL ui.Interface.frontCall("webcomponent","call",["formonly.splashwc","setLocale",global_var.g_language_short],[f_result])
+        CALL ui.Interface.frontCall("webcomponent","call",["formonly.splashwc","setLocale",global_var.language_short],[f_result])
     CATCH
         ERROR err_get(status)
         DISPLAY err_get(status)
     END TRY
     
     LET TERMINATE = FALSE
-    INITIALIZE global_var.g_instruction TO NULL
+    INITIALIZE global_var.instruction TO NULL
     LET m_window = ui.Window.getCurrent()
 
     IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
     THEN
-        CALL m_window.setText(global_var.g_title)
+        CALL m_window.setText(global_var.title)
     ELSE
-        IF global_config.g_enable_mobile_title = FALSE
+        IF global_config.enable_mobile_title = FALSE
         THEN
             CALL m_window.setText("")
         ELSE
-            CALL m_window.setText(global_var.g_title)
+            CALL m_window.setText(global_var.title)
         END IF
     END IF
 
@@ -169,7 +176,7 @@ FUNCTION run_splash_screen() #Application Splashscreen window function
     WHILE TERMINATE = FALSE
         MENU
 
-        ON TIMER global_config.g_splash_duration
+        ON TIMER global_config.splash_duration
             LET TERMINATE = TRUE
             EXIT MENU
 
@@ -183,7 +190,7 @@ FUNCTION run_splash_screen() #Application Splashscreen window function
         END MENU
     END WHILE
 
-    IF global_config.g_enable_login = TRUE
+    IF global_config.enable_login = TRUE
     THEN
         CLOSE WINDOW w
         CALL login_screen() 
@@ -223,18 +230,18 @@ FUNCTION login_screen() #Local Login window function
         OPEN WINDOW w WITH FORM "tool_new_install"
 
         LET TERMINATE = FALSE
-        INITIALIZE global_var.g_instruction TO NULL
+        INITIALIZE global_var.instruction TO NULL
         LET m_window = ui.Window.getCurrent()
 
         IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
         THEN
-            CALL m_window.setText(global_var.g_title)
+            CALL m_window.setText(global_var.title)
         ELSE
-            IF global_config.g_enable_mobile_title = FALSE
+            IF global_config.enable_mobile_title = FALSE
             THEN
                 CALL m_window.setText("")
             ELSE
-                CALL m_window.setText(global_var.g_title)
+                CALL m_window.setText(global_var.title)
             END IF
         END IF
         
@@ -325,10 +332,10 @@ FUNCTION login_screen() #Local Login window function
                                                                %"tool.string.Email" || ": " || f_email || "\n" ||
                                                                %"tool.string.Telephone" || ": " || f_telephone, "information") 
 
-                LET global_var.g_instruction = "proceed"
+                LET global_var.instruction = "proceed"
         END INPUT
 
-        CASE global_var.g_instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
+        CASE global_var.instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
             WHEN "proceed"
                 CLOSE WINDOW w
                 CALL login_screen()
@@ -336,8 +343,8 @@ FUNCTION login_screen() #Local Login window function
                 CLOSE WINDOW w
                 CALL admin_tools()
             WHEN "logout"
-                INITIALIZE global_var.g_user TO NULL
-                INITIALIZE global_var.g_logged_in TO NULL
+                INITIALIZE global_var.user TO NULL
+                INITIALIZE global_var.logged_in TO NULL
                 DISPLAY "Logged out successfully!"
                 CLOSE WINDOW w
                 CALL login_screen()
@@ -351,19 +358,19 @@ FUNCTION login_screen() #Local Login window function
         #Initialize window specific variables
       
         LET TERMINATE = FALSE
-        INITIALIZE global_var.g_instruction TO NULL
+        INITIALIZE global_var.instruction TO NULL
         LET m_window = ui.Window.getCurrent()
         LET m_dom_node1 = m_window.findNode("Image","splash")
 
         IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
         THEN
-            CALL m_window.setText(global_var.g_title)
+            CALL m_window.setText(global_var.title)
         ELSE
-            IF global_config.g_enable_mobile_title = FALSE
+            IF global_config.enable_mobile_title = FALSE
             THEN
                 CALL m_window.setText("")
             ELSE
-                CALL m_window.setText(global_var.g_title)
+                CALL m_window.setText(global_var.title)
             END IF
         END IF
 
@@ -373,8 +380,8 @@ FUNCTION login_screen() #Local Login window function
         IF global_var.info.deployment_type = "GDC"
         THEN
             CALL m_dom_node1.setAttribute("sizePolicy","dynamic")
-            CALL m_dom_node1.setAttribute("width",global_config.g_splash_width)
-            CALL m_dom_node1.setAttribute("height",global_config.g_splash_height)
+            CALL m_dom_node1.setAttribute("width",global_config.splash_width)
+            CALL m_dom_node1.setAttribute("height",global_config.splash_height)
         END IF
 
         #Set the login screen image to stretch both in GBC
@@ -390,7 +397,7 @@ FUNCTION login_screen() #Local Login window function
 
         INPUT m_username, m_password, m_remember FROM username, password, remember ATTRIBUTE(UNBUFFERED)
 
-            ON TIMER global_config.g_timed_checks_time
+            ON TIMER global_config.timed_checks_time
                 CALL connection_test()
                 CALL timed_upload_queue_data()
             
@@ -441,7 +448,7 @@ FUNCTION login_screen() #Local Login window function
               
               IF m_ok = TRUE
               THEN
-                  LET global_var.g_instruction = "connection"
+                  LET global_var.instruction = "connection"
                   EXIT INPUT
               ELSE
                   CALL fgl_winmessage(" ",%"main.string.Incorrect_Username", "information")
@@ -450,7 +457,7 @@ FUNCTION login_screen() #Local Login window function
                 
         END INPUT
 
-        CASE global_var.g_instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
+        CASE global_var.instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
             WHEN "connection"
                 CLOSE WINDOW w
                 CALL open_application()
@@ -474,18 +481,18 @@ FUNCTION open_application() #First Application window function (Demo purposes lo
     END IF
     
     LET TERMINATE = FALSE
-    INITIALIZE global_var.g_instruction TO NULL
+    INITIALIZE global_var.instruction TO NULL
     LET m_window = ui.Window.getCurrent()
 
     IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
     THEN
-        CALL m_window.setText(global_var.g_title)
+        CALL m_window.setText(global_var.title)
     ELSE
-        IF global_config.g_enable_mobile_title = FALSE
+        IF global_config.enable_mobile_title = FALSE
         THEN
             CALL m_window.setText("")
         ELSE
-            CALL m_window.setText(global_var.g_title)
+            CALL m_window.setText(global_var.title)
         END IF
     END IF
 
@@ -494,7 +501,7 @@ FUNCTION open_application() #First Application window function (Demo purposes lo
     WHILE TERMINATE = FALSE
         MENU
         
-            ON TIMER global_config.g_timed_checks_time
+            ON TIMER global_config.timed_checks_time
                 CALL connection_test()
                 CALL timed_upload_queue_data()
                 CALL update_connection_image("splash")
@@ -503,8 +510,8 @@ FUNCTION open_application() #First Application window function (Demo purposes lo
                 CALL connection_test()
                 CALL update_connection_image("splash")
                 CALL generate_about()
-                DISPLAY global_var.g_application_about TO status
-                IF global_var.g_user_type = "ADMIN"
+                DISPLAY global_var.application_about TO status
+                IF global_var.user_type = "ADMIN"
                 THEN
                     LET m_form = m_window.getForm() #Just to be consistent
                     CALL m_form.setElementHidden("bt_admint",0)
@@ -518,28 +525,28 @@ FUNCTION open_application() #First Application window function (Demo purposes lo
                 LET TERMINATE = TRUE
                 EXIT MENU
             ON ACTION bt_inter
-                LET global_var.g_instruction = "bt_inter"
+                LET global_var.instruction = "bt_inter"
                 LET TERMINATE = TRUE
                 EXIT MENU
             ON ACTION bt_photo
-                LET global_var.g_instruction = "bt_photo"
+                LET global_var.instruction = "bt_photo"
                 LET TERMINATE = TRUE
                 EXIT MENU
             ON ACTION bt_sync
                 CALL upload_image_payload(FALSE)
             ON ACTION bt_admint
-                LET global_var.g_instruction = "admint"
+                LET global_var.instruction = "admint"
                 LET TERMINATE = TRUE
                 EXIT MENU
             ON ACTION bt_logout
-                LET global_var.g_instruction = "logout"
+                LET global_var.instruction = "logout"
                 LET TERMINATE = TRUE
                 EXIT MENU                
               
         END MENU
     END WHILE
 
-    CASE global_var.g_instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
+    CASE global_var.instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
         WHEN "bt_inter"
             CLOSE WINDOW w
             CALL interact_demo()
@@ -550,8 +557,8 @@ FUNCTION open_application() #First Application window function (Demo purposes lo
             CLOSE WINDOW w
             CALL admin_tools()
         WHEN "logout"
-            INITIALIZE global_var.g_user TO NULL
-            INITIALIZE global_var.g_logged_in TO NULL
+            INITIALIZE global_var.user TO NULL
+            INITIALIZE global_var.logged_in TO NULL
             DISPLAY "Logged out successfully!"
             CLOSE WINDOW w
             CALL login_screen()
@@ -578,18 +585,18 @@ FUNCTION admin_tools() #Rough Development Tools window function (Mainly to showc
     END IF
 
     LET TERMINATE = FALSE
-    INITIALIZE global_var.g_instruction TO NULL
+    INITIALIZE global_var.instruction TO NULL
     LET m_window = ui.Window.getCurrent()
 
     IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
     THEN
-        CALL m_window.setText(global_var.g_title)
+        CALL m_window.setText(global_var.title)
     ELSE
-        IF global_config.g_enable_mobile_title = FALSE
+        IF global_config.enable_mobile_title = FALSE
         THEN
             CALL m_window.setText("")
         ELSE
-            CALL m_window.setText(global_var.g_title)
+            CALL m_window.setText(global_var.title)
         END IF
     END IF
 
@@ -598,7 +605,7 @@ FUNCTION admin_tools() #Rough Development Tools window function (Mainly to showc
     WHILE TERMINATE = FALSE
         MENU
         
-            ON TIMER global_config.g_timed_checks_time
+            ON TIMER global_config.timed_checks_time
                 CALL connection_test()
                 CALL timed_upload_queue_data()
                 
@@ -606,10 +613,10 @@ FUNCTION admin_tools() #Rough Development Tools window function (Mainly to showc
                 CALL connection_test()
                 LET f_words = %"main.string.Admin_Explanation"
                 DISPLAY f_words TO words
-                IF global_var.g_user_type != "ADMIN"
+                IF global_var.user_type != "ADMIN"
                 THEN
                     CALL fgl_winmessage(%"main.string.Error_Title", %"main.string.Bad_Access", "stop")
-                    LET global_var.g_instruction = "logout"
+                    LET global_var.instruction = "logout"
                     LET TERMINATE = TRUE
                     EXIT MENU      
                 END IF
@@ -622,29 +629,29 @@ FUNCTION admin_tools() #Rough Development Tools window function (Mainly to showc
             ON ACTION bt_dump
                 CALL print_debug_global_config()
             ON ACTION bt_user_manage
-                LET global_var.g_instruction = "bt_user_manage"
+                LET global_var.instruction = "bt_user_manage"
                 LET TERMINATE = TRUE
                 EXIT MENU                  
             ON ACTION bt_create
-                LET global_var.g_instruction = "bt_create"
+                LET global_var.instruction = "bt_create"
                 LET TERMINATE = TRUE
                 EXIT MENU
             ON ACTION bt_check
-                LET global_var.g_instruction = "bt_check"
+                LET global_var.instruction = "bt_check"
                 LET TERMINATE = TRUE
                 EXIT MENU
             ON ACTION bt_hash
-                LET global_var.g_instruction = "bt_hash"
+                LET global_var.instruction = "bt_hash"
                 LET TERMINATE = TRUE
                 EXIT MENU
             ON ACTION bt_go_back
-                LET global_var.g_instruction = "go_back"
+                LET global_var.instruction = "go_back"
                 LET TERMINATE = TRUE
                 EXIT MENU                
         END MENU
     END WHILE
 
-    CASE global_var.g_instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
+    CASE global_var.instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
         WHEN "bt_user_manage"
             CLOSE WINDOW w
             CALL tool_user_management()
@@ -661,8 +668,8 @@ FUNCTION admin_tools() #Rough Development Tools window function (Mainly to showc
             CLOSE WINDOW w
             CALL open_application()
         WHEN "logout"
-            INITIALIZE global_var.g_user TO NULL
-            INITIALIZE global_var.g_logged_in TO NULL
+            INITIALIZE global_var.user TO NULL
+            INITIALIZE global_var.logged_in TO NULL
             DISPLAY "Logged out successfully!"
             CLOSE WINDOW w
             CALL login_screen()
@@ -680,23 +687,23 @@ END FUNCTION
 ################################################################################
 
 FUNCTION connection_test() #Test online connectivity, call this whenever opening new window!
-    IF global_config.g_enable_timed_connect = TRUE
+    IF global_config.enable_timed_connect = TRUE
     THEN
         CALL test_connectivity(global_var.info.deployment_type)
-        IF global_var.g_online = "NONE" AND global_var.info.deployment_type = "GMA" OR global_var.g_online = "NONE" AND global_var.info.deployment_type = "GMI"
+        IF global_var.online = "NONE" AND global_var.info.deployment_type = "GMA" OR global_var.online = "NONE" AND global_var.info.deployment_type = "GMI"
         THEN
-            IF global_config.g_enable_mobile_title = FALSE
+            IF global_config.enable_mobile_title = FALSE
             THEN
                 CALL m_window.setText(%"main.string.Working_Offline")
             ELSE
-                CALL m_window.setText(%"main.string.Working_Offline" || global_var.g_title)
+                CALL m_window.setText(%"main.string.Working_Offline" || global_var.title)
             END IF
         ELSE
-            IF global_config.g_enable_mobile_title = FALSE
+            IF global_config.enable_mobile_title = FALSE
             THEN
                 CALL m_window.setText("")
             ELSE
-                CALL m_window.setText(global_var.g_title)
+                CALL m_window.setText(global_var.title)
             END IF
         END IF
     END IF
@@ -711,7 +718,7 @@ FUNCTION update_connection_image(f_image) #Used to update connection image withi
         f_image STRING
     
     LET m_form = m_window.getForm()
-    IF global_var.g_online = "NONE"
+    IF global_var.online = "NONE"
     THEN
         CALL m_form.setElementImage(f_image,"disconnected")
         DISPLAY %"main.string.Services_Disconnected" TO connected

@@ -4,53 +4,7 @@
 ################################################################################
 IMPORT os
 IMPORT util
-        
-  PUBLIC DEFINE
-    global_config RECORD
-      application_database_ver INTEGER,               #Application Database Version
-      enable_geolocation SMALLINT,                    #Toggle to enable geolocation
-      enable_mobile_title SMALLINT,                   #Toggle application title on mobile
-      timed_checks_time INTEGER,                      #Time in seconds before running auto checks, uploads or refreshes (0 disables this globally)
-      enable_timed_connect SMALLINT,                  #Enable timed connectivity checks
-      enable_splash SMALLINT,                         #Open splashscreen when opening the application.
-      splash_duration SMALLINT,                       #Splashscreen duration (seconds) enable_splash needs to be enabled!
-      enable_login SMALLINT,                          #Boot in to login menu or straight into application (open_application())
-      local_stat_limit INTEGER,                       #Number of max local stat records before pruning
-      online_pingURL STRING,                          #URL of public site to test internet connectivity (i.e. http://www.google.com) 
-      date_format STRING,                             #Datetime format. i.e.  "%d/%m/%Y %H:%M"
-      default_language STRING,                        #The default language used within the application (i.e. EN)
-      local_images_available DYNAMIC ARRAY OF CHAR(2),#Available localisations for images.
-      debug_level SMALLINT                            #Debug level // 0 - None, 1 - Verbose, 2 - 
-    END RECORD,
-
-    global_var RECORD
-      application_title STRING,           #Application Title
-      application_version STRING,         #Application Version
-      application_about STRING,           #Application About Blurb
-      title STRING,                       #Concatenated application title string
-      online STRING,                      #BOOLEAN to determine if the application is online or offline
-      user STRING,                        #Username of the user currently logged in
-      user_type STRING,                   #User type currently logged in
-      logged_in DATETIME YEAR TO SECOND,  #When the current user logged in to the system
-      OK_uploads INTEGER,                 #Number of successful uploads just carried out
-      FAILED_uploads INTEGER,             #Number of failed uploads just carried out
-      language STRING,                    #Current user's selected language
-      language_short STRING,              #The two character language code i.e. en instead of en_GB
-      instruction STRING,                 #This is used to swap between windows and forms
-      info RECORD                         #Used to store information regarding client deployment
-        deployment_type STRING,
-        os_type STRING,
-        ip STRING,
-        device_name STRING,
-        resolution STRING,
-        resolution_x STRING,
-        resolution_y STRING,
-        geo_status STRING,
-        geo_lat STRING,
-        geo_lon STRING,
-        locale STRING
-      END RECORD
-    END RECORD
+IMPORT FGL function_lib
 
   PRIVATE DEFINE
     m_require_app_reload SMALLINT

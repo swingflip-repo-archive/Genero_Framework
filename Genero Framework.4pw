@@ -94,7 +94,7 @@
     </Package>
   </Group>
   <Group environment="filelist:FGLPROFILE=$(ProjectDir)/config/fglprofile,dirlist:DBPATH=$(ProjectDir)/database;$(DBPATH),dirlist:FGLIMAGEPATH=../images/my_image2font.txt:../images:$(FGLDIR)/lib/image2font.txt:$(FGLIMAGEPATH):..,value:WIN_FGLIMAGEPATH=..\\images\\my_image2font.txt;..\\images;$(FGLDIR)\\lib\\image2font.txt;$(FGLIMAGEPATH);.." label="Project" language="Genero">
-    <Application binaryName="Application" dependencies="159917928,212784684,362164715,455109296" id="400358049" label="Application">
+    <Application binaryName="Application" dependencies="159917928,212784684,362164715,455109296,-1082203495" id="400358049" label="Application">
       <VirtualFolder label="Forms">
         <File filePath="src/forms/login.per"/>
       </VirtualFolder>
@@ -108,7 +108,9 @@
     <Library binaryName="Database" id="455109296" label="Database">
       <File filePath="database/mydatabase.db"/>
     </Library>
-    <Library binaryName="Library" dependencies="455109296" id="212784684" label="Library"/>
+    <Library binaryName="Library" dependencies="455109296" id="212784684" label="Library">
+      <File filePath="src/function_lib.4gl"/>
+    </Library>
     <Library binaryName="Localisation Files (defaults)" id="-1082203495" label="Localisation Files (defaults)">
       <VirtualFolder label="defaults (en)">
         <File filePath="src/lang_defaults/common_per.str"/>
