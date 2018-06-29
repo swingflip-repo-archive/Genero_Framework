@@ -112,13 +112,14 @@ FUNCTION sync_config(f_config_name STRING,f_debug SMALLINT) #******************#
     DISPLAY f_msg
   END IF
     
-END FUNCTION  #****************************************************************#
+END FUNCTION #*****************************************************************#
 #
 #
 #
 #
 FUNCTION initialize_publics() #************************************************#
-
+  RETURNS BOOLEAN
+  
   DEFINE
     f_channel base.Channel,
     f_string_line STRING
@@ -189,8 +190,9 @@ END FUNCTION #*****************************************************************#
 #
 #
 FUNCTION capture_local_stats(f_info) #*****************************************#
-
- DEFINE
+  RETURNS BOOLEAN
+  
+  DEFINE
     f_info RECORD
       deployment_type STRING,
       os_type STRING,
@@ -205,10 +207,15 @@ FUNCTION capture_local_stats(f_info) #*****************************************#
       locale STRING
     END RECORD,
     f_concat_geo STRING,
-    f_ok SMALLINT,
+    f_ok BOOLEAN, 
     f_count INTEGER
 
-  CALL db_function_lib.openDB("local.db",FALSE)
+  IF global_config.debug_level >= 2 
+  THEN
+    CALL db_function_lib.openDB("local.db",TRUE)
+  ELSE
+    CALL db_function_lib.openDB("local.db",FALSE)
+  END IF
   
   LET f_ok = FALSE
   LET f_concat_geo = f_info.geo_lat || "*" || f_info.geo_lon # * is the delimeter.
@@ -253,11 +260,12 @@ END FUNCTION #*****************************************************************#
 #
 #
 FUNCTION hash_password(f_pass STRING) #****************************************#
+  RETURNS (BOOLEAN, STRING)
 
   DEFINE
     salt STRING,
     hashed_pass STRING,
-    f_ok SMALLINT
+    f_ok BOOLEAN
     
   LET f_ok = FALSE
 
@@ -279,11 +287,12 @@ END FUNCTION #*****************************************************************#
 #
 #
 FUNCTION check_password(f_user STRING,f_pass STRING) #*************************#
+  RETURNS BOOLEAN
 
   DEFINE
     hashed_pass STRING,
     f_user_type STRING,
-    f_ok SMALLINT
+    f_ok BOOLEAN
 
   LET f_ok = FALSE
 
@@ -311,62 +320,65 @@ END FUNCTION #*****************************************************************#
 #
 #
 FUNCTION get_local_remember() #************************************************#
+  RETURNS (BOOLEAN, BOOLEAN, LIKE local_accounts.username)
 
-  {DEFINE
-    f_remember SMALLINT,
+  DEFINE
+    f_remember BOOLEAN,
     f_username LIKE local_accounts.username,
-    f_ok SMALLINT
+    f_ok BOOLEAN
 
-  CALL db_function_lib.openDB("local.db",FALSE)
+  IF global_config.debug_level >= 2 
+  THEN
+    CALL db_function_lib.openDB("local.db",TRUE)
+  ELSE
+    CALL db_function_lib.openDB("local.db",FALSE)
+  END IF
 
   LET f_ok = FALSE
 
-  SELECT remember, username INTO f_remember, f_username FROM local_remember WHERE 1  = 1
-
-  IF f_remember IS NOT NULL
-  THEN
-    LET f_ok = TRUE
-  ELSE
-    CALL fgl_winmessage(%"function.lib.string.Fatal_Error", %"function.lib.string.ERROR_1004", "stop")
-    EXIT PROGRAM 1004
-  END IF
+  SELECT remember, username INTO f_remember, f_username FROM local_remember
 
   IF f_remember = FALSE
   THEN
     LET f_username = ""
   END IF
 
-  RETURN f_ok, f_remember, f_username}
+  RETURN f_ok, f_remember, f_username
     
 END FUNCTION #*****************************************************************#
 #
 #
 #
 #
-FUNCTION refresh_local_remember(f_username STRING,f_remember STRING) #*********#
+FUNCTION refresh_local_remember(f_username STRING,f_remember BOOLEAN) #********#
+  RETURNS BOOLEAN
 
-    {DEFINE
-        f_remember SMALLINT,
-        f_username LIKE local_accounts.username,
-        f_ok SMALLINT
+  DEFINE
+    f_ok BOOLEAN
 
+  IF global_config.debug_level >= 2 
+  THEN
+    CALL db_function_lib.openDB("local.db",TRUE)
+  ELSE
     CALL db_function_lib.openDB("local.db",FALSE)
+  END IF
 
-    LET f_ok = FALSE
-    TRY
-        UPDATE local_remember SET remember = f_remember, username = f_username, last_modified = CURRENT YEAR TO SECOND WHERE 1 = 1
-    CATCH
-        DISPLAY STATUS || " " || SQLERRMESSAGE
-    END TRY
+  LET f_ok = FALSE
+  TRY
+    LET f_current_DT = CURRENT
+    UPDATE local_remember SET remember = f_remember, username = f_username, last_modified = f_current_DT
+  CATCH
+    DISPLAY STATUS || " " || SQLERRMESSAGE
+  END TRY
 
-    IF sqlca.sqlcode <> 0
-    THEN
-        CALL fgl_winmessage(%"function.lib.string.Fatal_Error", %"function.lib.string.ERROR_1005", "stop")
-        EXIT PROGRAM 1005
-    ELSE
-        LET f_ok = TRUE
-    END IF
+  IF sqlca.sqlcode <> 0
+  THEN
+    CALL fgl_winmessage(%"function.lib.string.Fatal_Error", %"function.lib.string.ERROR_1005", "stop")
+    EXIT PROGRAM 1005
+  ELSE
+    LET f_ok = TRUE
+  END IF
 
-    RETURN f_ok}
+  RETURN f_ok
     
 END FUNCTION #*****************************************************************#

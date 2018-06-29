@@ -7,7 +7,7 @@ IMPORT util
 IMPORT FGL function_lib
 
   PRIVATE DEFINE
-    m_require_app_reload SMALLINT
+    m_require_app_reload BOOLEAN
   
 MAIN ###########################################################################
 
@@ -28,10 +28,12 @@ MAIN ###########################################################################
 END MAIN #######################################################################
 
 FUNCTION load_localisation(f_locale STRING, f_pre_window SMALLINT) #***********#
+  RETURNS BOOLEAN
+
   DEFINE
     f_localisation_path STRING,
     f_stringbuffer base.StringBuffer,
-    f_require_reload SMALLINT
+    f_require_reload BOOLEAN
       
   LET f_require_reload = FALSE
   

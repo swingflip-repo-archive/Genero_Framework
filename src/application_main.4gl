@@ -45,9 +45,9 @@ FUNCTION initialise_app() #****************************************************#
   WHILE m_string_tokenizer.hasMoreTokens()
     IF m_index = 1
     THEN
-        LET global_var.info.resolution_x = m_string_tokenizer.nextToken() || "px"
+      LET global_var.info.resolution_x = m_string_tokenizer.nextToken() || "px"
     ELSE
-        LET global_var.info.resolution_y = m_string_tokenizer.nextToken() || "px"
+      LET global_var.info.resolution_y = m_string_tokenizer.nextToken() || "px"
     END IF
     LET m_index = m_index + 1
   END WHILE
