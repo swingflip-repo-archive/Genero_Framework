@@ -15,7 +15,8 @@ IMPORT FGL fgldialog
     m_dom_node1 om.DomNode,
     m_index INTEGER,
     m_ok SMALLINT,
-    m_status STRING
+    m_status STRING,
+    f_current_DT DATETIME YEAR TO SECOND
 
   PRIVATE DEFINE
     m_username STRING,
@@ -115,8 +116,8 @@ FUNCTION initialise_app() #****************************************************#
   END IF
 
   CALL function_lib.test_connectivity(global_var.info.deployment_type)
-  #CALL function_lib.capture_local_stats(global_var.info.*)
-  #  RETURNING m_ok
+  CALL function_lib.capture_local_stats(global_var.info.*)
+    RETURNING m_ok
 
   CLOSE WINDOW SCREEN #Just incase
 
@@ -473,210 +474,7 @@ END FUNCTION
 #
 FUNCTION open_application() #First Application window function (Demo purposes loads 'connection' form)
 
-    IF global_var.info.deployment_type = "GDC"
-    THEN
-        OPEN WINDOW w WITH FORM "connection_gdc"
-    ELSE
-        OPEN WINDOW w WITH FORM "connection"
-    END IF
-    
-    LET TERMINATE = FALSE
-    INITIALIZE global_var.instruction TO NULL
-    LET m_window = ui.Window.getCurrent()
-
-    IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
-    THEN
-        CALL m_window.setText(global_var.title)
-    ELSE
-        IF global_config.enable_mobile_title = FALSE
-        THEN
-            CALL m_window.setText("")
-        ELSE
-            CALL m_window.setText(global_var.title)
-        END IF
-    END IF
-
-    LET TERMINATE = FALSE
-
-    WHILE TERMINATE = FALSE
-        MENU
-        
-            ON TIMER global_config.timed_checks_time
-                CALL connection_test()
-                CALL timed_upload_queue_data()
-                CALL update_connection_image("splash")
-                
-            BEFORE MENU
-                CALL connection_test()
-                CALL update_connection_image("splash")
-                CALL generate_about()
-                DISPLAY global_var.application_about TO status
-                IF global_var.user_type = "ADMIN"
-                THEN
-                    LET m_form = m_window.getForm() #Just to be consistent
-                    CALL m_form.setElementHidden("bt_admint",0)
-                END IF
-                IF global_var.info.deployment_type = "GMA" OR global_var.info.deployment_type = "GMI"
-                THEN
-                    LET m_form = m_window.getForm() #Just to be consistent
-                    CALL m_form.setElementHidden("bt_photo",0) #Photo uploads exclusive to mobile
-                END IF
-            ON ACTION CLOSE
-                LET TERMINATE = TRUE
-                EXIT MENU
-            ON ACTION bt_inter
-                LET global_var.instruction = "bt_inter"
-                LET TERMINATE = TRUE
-                EXIT MENU
-            ON ACTION bt_photo
-                LET global_var.instruction = "bt_photo"
-                LET TERMINATE = TRUE
-                EXIT MENU
-            ON ACTION bt_sync
-                CALL upload_image_payload(FALSE)
-            ON ACTION bt_admint
-                LET global_var.instruction = "admint"
-                LET TERMINATE = TRUE
-                EXIT MENU
-            ON ACTION bt_logout
-                LET global_var.instruction = "logout"
-                LET TERMINATE = TRUE
-                EXIT MENU                
-              
-        END MENU
-    END WHILE
-
-    CASE global_var.instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
-        WHEN "bt_inter"
-            CLOSE WINDOW w
-            CALL interact_demo()
-        WHEN "bt_photo"
-            CLOSE WINDOW w
-            CALL image_program()
-        WHEN "admint"
-            CLOSE WINDOW w
-            CALL admin_tools()
-        WHEN "logout"
-            INITIALIZE global_var.user TO NULL
-            INITIALIZE global_var.logged_in TO NULL
-            DISPLAY "Logged out successfully!"
-            CLOSE WINDOW w
-            CALL login_screen()
-        OTHERWISE
-            CALL ui.Interface.refresh()
-            CALL close_app()
-    END CASE
-
-END FUNCTION
-#
-#
-#
-#
-FUNCTION admin_tools() #Rough Development Tools window function (Mainly to showcase an admin only section)
-
-    DEFINE
-        f_words STRING
-
-    IF global_var.info.deployment_type = "GDC"
-    THEN
-        OPEN WINDOW w WITH FORM "admin_gdc"
-    ELSE
-        OPEN WINDOW w WITH FORM "admin"
-    END IF
-
-    LET TERMINATE = FALSE
-    INITIALIZE global_var.instruction TO NULL
-    LET m_window = ui.Window.getCurrent()
-
-    IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
-    THEN
-        CALL m_window.setText(global_var.title)
-    ELSE
-        IF global_config.enable_mobile_title = FALSE
-        THEN
-            CALL m_window.setText("")
-        ELSE
-            CALL m_window.setText(global_var.title)
-        END IF
-    END IF
-
-    LET TERMINATE = FALSE
-
-    WHILE TERMINATE = FALSE
-        MENU
-        
-            ON TIMER global_config.timed_checks_time
-                CALL connection_test()
-                CALL timed_upload_queue_data()
-                
-            BEFORE MENU
-                CALL connection_test()
-                LET f_words = %"main.string.Admin_Explanation"
-                DISPLAY f_words TO words
-                IF global_var.user_type != "ADMIN"
-                THEN
-                    CALL fgl_winmessage(%"main.string.Error_Title", %"main.string.Bad_Access", "stop")
-                    LET global_var.instruction = "logout"
-                    LET TERMINATE = TRUE
-                    EXIT MENU      
-                END IF
-                
-            ON ACTION CLOSE
-                LET TERMINATE = TRUE
-                EXIT MENU
-            ON ACTION bt_env_dump
-                CALL print_debug_env()
-            ON ACTION bt_dump
-                CALL print_debug_global_config()
-            ON ACTION bt_user_manage
-                LET global_var.instruction = "bt_user_manage"
-                LET TERMINATE = TRUE
-                EXIT MENU                  
-            ON ACTION bt_create
-                LET global_var.instruction = "bt_create"
-                LET TERMINATE = TRUE
-                EXIT MENU
-            ON ACTION bt_check
-                LET global_var.instruction = "bt_check"
-                LET TERMINATE = TRUE
-                EXIT MENU
-            ON ACTION bt_hash
-                LET global_var.instruction = "bt_hash"
-                LET TERMINATE = TRUE
-                EXIT MENU
-            ON ACTION bt_go_back
-                LET global_var.instruction = "go_back"
-                LET TERMINATE = TRUE
-                EXIT MENU                
-        END MENU
-    END WHILE
-
-    CASE global_var.instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
-        WHEN "bt_user_manage"
-            CLOSE WINDOW w
-            CALL tool_user_management()
-        WHEN "bt_create"
-            CLOSE WINDOW w
-            CALL tool_create_user()
-        WHEN "bt_check"
-            CLOSE WINDOW w
-            CALL tool_check_password()
-        WHEN "bt_hash"
-            CLOSE WINDOW w
-            CALL tool_hash_generator()
-        WHEN "go_back"
-            CLOSE WINDOW w
-            CALL open_application()
-        WHEN "logout"
-            INITIALIZE global_var.user TO NULL
-            INITIALIZE global_var.logged_in TO NULL
-            DISPLAY "Logged out successfully!"
-            CLOSE WINDOW w
-            CALL login_screen()
-        OTHERWISE
-            CALL ui.Interface.refresh()
-            CALL close_app()
-    END CASE
+   
 
 END FUNCTION
 

@@ -3,7 +3,8 @@ IMPORT com
 IMPORT util
 IMPORT os
 IMPORT FGL fgldialog
-#SCHEMA local_db
+IMPORT FGL db_function_lib
+SCHEMA local
 
   PUBLIC DEFINE
     global_config RECORD
@@ -52,6 +53,9 @@ IMPORT FGL fgldialog
       END RECORD
     END RECORD
 
+  PRIVATE DEFINE
+    f_current_DT DATETIME YEAR TO SECOND
+
 FUNCTION sync_config(f_config_name STRING,f_debug SMALLINT) #******************#
 
   DEFINE 
@@ -70,7 +74,6 @@ FUNCTION sync_config(f_config_name STRING,f_debug SMALLINT) #******************#
     THEN
       IF NOT os.path.exists(os.path.join(f_config_configname,f_config_name)) # Check app/../config for config file
       THEN
-        #If you get to this point you have done something drastically wrong...
         DISPLAY "FATAL ERROR: You don't have a config file set up!"
         EXIT PROGRAM 9999
       ELSE
@@ -109,12 +112,12 @@ FUNCTION sync_config(f_config_name STRING,f_debug SMALLINT) #******************#
     DISPLAY f_msg
   END IF
     
-END FUNCTION
+END FUNCTION  #****************************************************************#
 #
 #
 #
 #
-FUNCTION initialize_publics() #Set up public variables
+FUNCTION initialize_publics() #************************************************#
 
   DEFINE
     f_channel base.Channel,
@@ -135,12 +138,12 @@ FUNCTION initialize_publics() #Set up public variables
 
   RETURN TRUE
     
-END FUNCTION
+END FUNCTION #*****************************************************************#
 #
 #
 #
 #
-FUNCTION test_connectivity(f_deployment_type STRING)
+FUNCTION test_connectivity(f_deployment_type STRING) #*************************#
 
   DEFINE
     f_connectivity STRING,
@@ -179,73 +182,78 @@ FUNCTION test_connectivity(f_deployment_type STRING)
   END IF
 
   LET global_var.online = f_connectivity
-END FUNCTION
+  
+END FUNCTION #*****************************************************************#
 #
 #
 #
 #
-{FUNCTION capture_local_stats(f_info)
-    DEFINE
-        f_info RECORD
-            deployment_type STRING,
-            os_type STRING,
-            ip STRING,
-            device_name STRING,
-            resolution STRING,
-            resolution_x STRING,
-            resolution_y STRING,
-            geo_status STRING,
-            geo_lat STRING,
-            geo_lon STRING,
-            locale STRING
-        END RECORD,
-        f_concat_geo STRING,
-        f_ok SMALLINT,
-        f_count INTEGER
+FUNCTION capture_local_stats(f_info) #*****************************************#
 
-    CALL openDB("local_db.db",FALSE)
-    
-    LET f_ok = FALSE
-    LET f_concat_geo = f_info.geo_lat || "*" || f_info.geo_lon #* is the delimeter.
+ DEFINE
+    f_info RECORD
+      deployment_type STRING,
+      os_type STRING,
+      ip STRING,
+      device_name STRING,
+      resolution STRING,
+      resolution_x STRING,
+      resolution_y STRING,
+      geo_status STRING,
+      geo_lat STRING,
+      geo_lon STRING,
+      locale STRING
+    END RECORD,
+    f_concat_geo STRING,
+    f_ok SMALLINT,
+    f_count INTEGER
+
+  CALL db_function_lib.openDB("local.db",FALSE)
+  
+  LET f_ok = FALSE
+  LET f_concat_geo = f_info.geo_lat || "*" || f_info.geo_lon # * is the delimeter.
+  TRY
+    LET f_current_DT = CURRENT
+    INSERT INTO local_stat VALUES(NULL, f_info.deployment_type, f_info.os_type, f_info.ip, f_info.device_name, f_info.resolution,  f_concat_geo, f_current_DT)
+  CATCH
+    DISPLAY STATUS || " " || SQLERRMESSAGE
+  END TRY
+
+  IF sqlca.sqlcode <> 0
+  THEN
+    CALL fgl_winmessage(%"function.lib.string.Fatal_Error", %"function.lib.string.ERROR_1002", "stop")
+    EXIT PROGRAM 1002
+  ELSE
+    LET f_ok = TRUE
+  END IF
+
+  #We don't want the local stat table getting too big so lets clear down old data as we go along...
+  SELECT COUNT(*) INTO f_count FROM local_stat
+
+  IF f_count >= global_config.local_stat_limit
+  THEN
     TRY
-        INSERT INTO local_stat VALUES(NULL, f_info.deployment_type, f_info.os_type, f_info.ip, f_info.device_name, f_info.resolution,  f_concat_geo, CURRENT YEAR TO SECOND)
+      DELETE FROM local_stat WHERE l_s_index = (SELECT MIN(l_s_index) FROM local_stat)
     CATCH
-        DISPLAY STATUS || " " || SQLERRMESSAGE
+      DISPLAY STATUS || " " || SQLERRMESSAGE
     END TRY
 
     IF sqlca.sqlcode <> 0
     THEN
-        CALL fgl_winmessage(%"function.lib.string.Fatal_Error", %"function.lib.string.ERROR_1002", "stop")
-        EXIT PROGRAM 1002
-    ELSE
-        LET f_ok = TRUE
+      CALL fgl_winmessage(%"function.lib.string.Fatal_Error", %"function.lib.string.ERROR_1003", "stop")
+      EXIT PROGRAM 1003
     END IF
+  END IF
+  
+  RETURN f_ok
+  
+END FUNCTION #*****************************************************************#
+#
+#
+#
+#
+FUNCTION hash_password(f_pass STRING) #****************************************#
 
-    #We don't want the local stat table getting too big so lets clear down old data as we go along...
-    SELECT COUNT(*) INTO f_count FROM local_stat
-
-    IF f_count >= global_config.g_local_stat_limit
-    THEN
-        TRY
-            DELETE FROM local_stat WHERE l_s_index = (SELECT MIN(l_s_index) FROM local_stat)
-        CATCH
-            DISPLAY STATUS || " " || SQLERRMESSAGE
-        END TRY
-
-        IF sqlca.sqlcode <> 0
-        THEN
-            CALL fgl_winmessage(%"function.lib.string.Fatal_Error", %"function.lib.string.ERROR_1003", "stop")
-            EXIT PROGRAM 1003
-        END IF
-    END IF
-    
-    RETURN f_ok
-END FUNCTION}
-#
-#
-#
-#
-FUNCTION hash_password(f_pass STRING)
   DEFINE
     salt STRING,
     hashed_pass STRING,
@@ -264,12 +272,14 @@ FUNCTION hash_password(f_pass STRING)
   END IF
 
   RETURN f_ok, hashed_pass
-END FUNCTION
+  
+END FUNCTION #*****************************************************************#
 #
 #
 #
 #
-FUNCTION check_password(f_user STRING,f_pass STRING)
+FUNCTION check_password(f_user STRING,f_pass STRING) #*************************#
+
   DEFINE
     hashed_pass STRING,
     f_user_type STRING,
@@ -294,19 +304,20 @@ FUNCTION check_password(f_user STRING,f_pass STRING)
   END IF
 
   RETURN f_ok
-END FUNCTION
+  
+END FUNCTION #*****************************************************************#
 #
 #
 #
 #
-FUNCTION get_local_remember()
+FUNCTION get_local_remember() #************************************************#
 
   {DEFINE
     f_remember SMALLINT,
     f_username LIKE local_accounts.username,
     f_ok SMALLINT
 
-  CALL openDB("local_db.db",FALSE)
+  CALL db_function_lib.openDB("local.db",FALSE)
 
   LET f_ok = FALSE
 
@@ -327,19 +338,19 @@ FUNCTION get_local_remember()
 
   RETURN f_ok, f_remember, f_username}
     
-END FUNCTION
+END FUNCTION #*****************************************************************#
 #
 #
 #
 #
-FUNCTION refresh_local_remember(f_username STRING,f_remember STRING)
+FUNCTION refresh_local_remember(f_username STRING,f_remember STRING) #*********#
 
     {DEFINE
         f_remember SMALLINT,
         f_username LIKE local_accounts.username,
         f_ok SMALLINT
 
-    CALL openDB("local_db.db",FALSE)
+    CALL db_function_lib.openDB("local.db",FALSE)
 
     LET f_ok = FALSE
     TRY
@@ -358,4 +369,4 @@ FUNCTION refresh_local_remember(f_username STRING,f_remember STRING)
 
     RETURN f_ok}
     
-END FUNCTION
+END FUNCTION #*****************************************************************#

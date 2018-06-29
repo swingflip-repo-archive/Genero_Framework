@@ -19,7 +19,7 @@ MAIN ###########################################################################
   LET global_var.language = global_var.info.locale
 
   CALL load_localisation(global_var.info.locale,TRUE)
-      RETURNING m_require_app_reload
+    RETURNING m_require_app_reload
 
   CALL initialise_app()
 

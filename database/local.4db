@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='ASCII'?>
+<Schema id="{7dab569a-5a57-4f3b-9366-2ba2968b64bf}" version="4.0">
+  <ExtractionSettings last="SQLite">
+    <ExtractionOptions casens="LowerCase" cvmeth="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" ignerr="true" systab="false" type="SQLite"/>
+  </ExtractionSettings>
+  <Table name="database_version" isView="false" status="U">
+    <Column fglLength="4" fglType="258" name="d_v_index" notNull="true" order="1" status="U"/>
+    <Column fglLength="4" fglType="2" name="db_version" notNull="false" order="2" status="U"/>
+    <Column fglLength="3594" fglType="10" name="last_updated" notNull="false" order="3" status="U"/>
+    <Index indexColumns="d_v_index" indexConstraint="primaryKey" name="primary_key_database_version" status="U"/>
+  </Table>
+  <Table name="local_accounts" isView="false" status="U">
+    <Column fglLength="4" fglType="258" name="l_u_index" notNull="true" order="1" status="U"/>
+    <Column fglLength="255" fglType="457" name="username" notNull="true" order="2" status="U"/>
+    <Column fglLength="255" fglType="457" name="password" notNull="true" order="3" status="U"/>
+    <Column fglLength="255" fglType="201" name="email" notNull="false" order="4" status="U"/>
+    <Column fglLength="4" fglType="2" name="phone" notNull="false" order="5" status="U"/>
+    <Column fglLength="3594" fglType="10" name="last_login" notNull="false" order="6" status="U"/>
+    <Column fglLength="5" fglType="201" name="user_type" notNull="false" order="7" status="U"/>
+    <Index indexColumns="username" indexConstraint="unique" name="sqlite_autoindex_local_accounts_1" status="U"/>
+    <Index indexColumns="l_u_index" indexConstraint="primaryKey" name="primary_key_local_accounts" status="U"/>
+  </Table>
+  <Table name="local_remember" isView="false" status="U">
+    <Column fglLength="4" fglType="258" name="l_r_index" notNull="true" order="1" status="U"/>
+    <Column fglLength="255" fglType="201" name="username" notNull="false" order="2" status="U"/>
+    <Column fglLength="2" fglType="257" name="remember" notNull="true" order="3" status="U"/>
+    <Column fglLength="3594" fglType="10" name="last_modified" notNull="false" order="4" status="U"/>
+    <Index indexColumns="l_r_index" indexConstraint="primaryKey" name="primary_key_local_remember" status="U"/>
+  </Table>
+  <Table name="local_stat" isView="false" status="U">
+    <Column fglLength="4" fglType="258" name="l_s_index" notNull="true" order="1" status="U"/>
+    <Column fglLength="255" fglType="457" name="deployment_type" notNull="true" order="2" status="U"/>
+    <Column fglLength="255" fglType="457" name="os_type" notNull="true" order="3" status="U"/>
+    <Column fglLength="255" fglType="201" name="ip" notNull="false" order="4" status="U"/>
+    <Column fglLength="255" fglType="201" name="device_name" notNull="false" order="5" status="U"/>
+    <Column fglLength="255" fglType="201" name="resolution" notNull="false" order="6" status="U"/>
+    <Column fglLength="255" fglType="201" name="geo_location" notNull="false" order="7" status="U"/>
+    <Column fglLength="3594" fglType="266" name="last_load" notNull="true" order="8" status="U"/>
+    <Index indexColumns="l_s_index" indexConstraint="primaryKey" name="primary_key_local_stat" status="U"/>
+  </Table>
+  <Table name="payload_queue" isView="false" status="U">
+    <Column fglLength="4" fglType="258" name="p_q_index" notNull="true" order="1" status="U"/>
+    <Column fglLength="255" fglType="457" name="requested_by" notNull="true" order="2" status="U"/>
+    <Column fglLength="3594" fglType="266" name="requested_date" notNull="true" order="3" status="U"/>
+    <Column fglLength="3594" fglType="10" name="last_attempted" notNull="false" order="4" status="U"/>
+    <Column fglLength="255" fglType="457" name="destination" notNull="true" order="5" status="U"/>
+    <Column fglLength="64" fglType="457" name="payload_type" notNull="true" order="6" status="U"/>
+    <Column fglLength="56" fglType="267" name="payload" notNull="true" order="7" status="U"/>
+    <Index indexColumns="p_q_index" indexConstraint="primaryKey" name="primary_key_payload_queue" status="U"/>
+  </Table>
+  <Table name="seqreg" isView="false" status="U">
+    <Column fglLength="30" fglType="457" name="sr_name" notNull="true" order="1" status="U"/>
+    <Column fglLength="4" fglType="258" name="sr_last" notNull="true" order="2" status="U"/>
+    <Index indexColumns="sr_name" indexConstraint="primaryKey" name="sqlite_autoindex_seqreg_1" status="U"/>
+  </Table>
+</Schema>

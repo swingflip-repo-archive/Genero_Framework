@@ -60,11 +60,6 @@
   </Settings>
   <LanguageList version="1.0"/>
   <PlatformList version="1.0"/>
-  <Group label="DatabaseMaintenance" language="Genero" targetDirectory="$(ProjectDir)/bin/dbbin">
-    <Application binaryName="CreateDatabase" dependencies="455109296" id="184075814" label="CreateDatabase" targetDirectory="$(ProjectDir)/bin/dbbin">
-      <File filePath="src/dbsrc/mydatabase_sqt_x.4gl"/>
-    </Application>
-  </Group>
   <Group label="Packages" language="Genero">
     <Package binaryName="MyApp_Android" dependencies="400358049,781919164,715422167,313644474" description="Android Package" label="MyApp_Android" platform="Android">
       <DynamicProperty name="packageId" value="com.company.myapp"/>
@@ -106,9 +101,11 @@
       <File filePath="config/fglprofile"/>
     </Library>
     <Library binaryName="Database" id="455109296" label="Database">
-      <File filePath="database/mydatabase.db"/>
+      <File filePath="database/local.4db"/>
+      <File filePath="database/local.db"/>
     </Library>
     <Library binaryName="Library" dependencies="455109296" id="212784684" label="Library">
+      <File filePath="src/db_function_lib.4gl"/>
       <File filePath="src/function_lib.4gl"/>
     </Library>
     <Library binaryName="Localisation Files (defaults)" id="-1082203495" label="Localisation Files (defaults)">
@@ -118,5 +115,13 @@
       </VirtualFolder>
     </Library>
     <Library binaryName="Resources" id="159917928" label="Resources"/>
+  </Group>
+  <Group label="Toolbox" language="Genero">
+    <Application binaryName="Create_Local_Database" dependencies="212784684" id="598860720" label="Create_Local_Database">
+      <File filePath="src/tools/database_local_create.4gl"/>
+    </Application>
+    <Application binaryName="Resync_Local_Database" dependencies="212784684" id="1207434250" label="Resync_Local_Database">
+      <File filePath="src/tools/database_local_resync.4gl"/>
+    </Application>
   </Group>
 </Project>
