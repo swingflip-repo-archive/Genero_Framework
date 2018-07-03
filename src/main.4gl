@@ -5,6 +5,7 @@
 IMPORT os
 IMPORT util
 IMPORT FGL function_lib
+IMPORT FGL application_main
 
   PRIVATE DEFINE
     m_require_app_reload BOOLEAN
@@ -21,7 +22,7 @@ MAIN ###########################################################################
   CALL load_localisation(global_var.info.locale,TRUE)
     RETURNING m_require_app_reload
 
-  CALL initialise_app()
+  CALL application_main.initialise_app()
 
   DISPLAY "App Finish - " || TIME( CURRENT )
 

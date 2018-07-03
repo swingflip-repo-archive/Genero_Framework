@@ -207,7 +207,6 @@ FUNCTION capture_local_stats(f_info) #*****************************************#
       locale STRING
     END RECORD,
     f_concat_geo STRING,
-    f_ok BOOLEAN, 
     f_count INTEGER
 
   IF global_config.debug_level >= 2 
@@ -217,7 +216,6 @@ FUNCTION capture_local_stats(f_info) #*****************************************#
     CALL db_function_lib.openDB("local.db",FALSE)
   END IF
   
-  LET f_ok = FALSE
   LET f_concat_geo = f_info.geo_lat || "*" || f_info.geo_lon # * is the delimeter.
   TRY
     LET f_current_DT = CURRENT
@@ -230,8 +228,6 @@ FUNCTION capture_local_stats(f_info) #*****************************************#
   THEN
     CALL fgl_winmessage(%"function.lib.string.Fatal_Error", %"function.lib.string.ERROR_1002", "stop")
     EXIT PROGRAM 1002
-  ELSE
-    LET f_ok = TRUE
   END IF
 
   #We don't want the local stat table getting too big so lets clear down old data as we go along...
@@ -252,8 +248,43 @@ FUNCTION capture_local_stats(f_info) #*****************************************#
     END IF
   END IF
   
-  RETURN f_ok
+  RETURN TRUE #legacy
   
+END FUNCTION #*****************************************************************#
+#
+#
+#
+#
+FUNCTION check_new_install() #*************************************************#
+  RETURNS SMALLINT
+  
+  DEFINE
+    f_count INTEGER
+
+  #0-USERFOUND,#1-NEWINSTALL,#2-DBERROR
+
+  IF global_config.debug_level >= 2 
+  THEN
+    CALL db_function_lib.openDB("local.db",TRUE)
+  ELSE
+    CALL db_function_lib.openDB("local.db",FALSE)
+  END IF
+  
+  TRY
+    SELECT COUNT(*) INTO f_count FROM local_accounts
+  CATCH
+    DISPLAY STATUS || " " || SQLERRMESSAGE
+    CALL fgl_winmessage("ERROR", STATUS || " " || SQLERRMESSAGE, "stop")
+    RETURN 2
+  END TRY
+
+  IF f_count == 0 
+  THEN
+    RETURN 1
+  ELSE
+    RETURN 0
+  END IF
+    
 END FUNCTION #*****************************************************************#
 #
 #
@@ -291,28 +322,25 @@ FUNCTION check_password(f_user STRING,f_pass STRING) #*************************#
 
   DEFINE
     hashed_pass STRING,
-    f_user_type STRING,
-    f_ok BOOLEAN
-
-  LET f_ok = FALSE
+    f_user_type STRING
 
   SELECT password,user_type INTO hashed_pass,f_user_type FROM local_accounts WHERE username = f_user
 
   IF hashed_pass IS NULL
   THEN
-    LET f_ok = FALSE
+    RETURN FALSE
   ELSE
     IF Security.BCrypt.CheckPassword(f_pass, hashed_pass) THEN
-      LET f_ok = TRUE
       LET global_var.user = f_user
       LET global_var.user_type = f_user_type
       LET global_var.logged_in = CURRENT YEAR TO SECOND
+      RETURN TRUE
     ELSE
-      LET f_ok = FALSE
+      RETURN FALSE
     END IF
   END IF
 
-  RETURN f_ok
+  RETURN FALSE
   
 END FUNCTION #*****************************************************************#
 #
@@ -353,9 +381,6 @@ END FUNCTION #*****************************************************************#
 FUNCTION refresh_local_remember(f_username STRING,f_remember BOOLEAN) #********#
   RETURNS BOOLEAN
 
-  DEFINE
-    f_ok BOOLEAN
-
   IF global_config.debug_level >= 2 
   THEN
     CALL db_function_lib.openDB("local.db",TRUE)
@@ -363,7 +388,6 @@ FUNCTION refresh_local_remember(f_username STRING,f_remember BOOLEAN) #********#
     CALL db_function_lib.openDB("local.db",FALSE)
   END IF
 
-  LET f_ok = FALSE
   TRY
     LET f_current_DT = CURRENT
     UPDATE local_remember SET remember = f_remember, username = f_username, last_modified = f_current_DT
@@ -376,9 +400,153 @@ FUNCTION refresh_local_remember(f_username STRING,f_remember BOOLEAN) #********#
     CALL fgl_winmessage(%"function.lib.string.Fatal_Error", %"function.lib.string.ERROR_1005", "stop")
     EXIT PROGRAM 1005
   ELSE
-    LET f_ok = TRUE
+    RETURN TRUE
   END IF
 
-  RETURN f_ok
+  RETURN FALSE
     
+END FUNCTION #*****************************************************************#
+#
+#
+#
+#
+FUNCTION validate_input_data(f_input STRING, f_nulls BOOLEAN, #****************#
+                             f_special_characters BOOLEAN,
+                             f_safe_special_characters BOOLEAN,
+                             f_numerals BOOLEAN, f_letters BOOLEAN,
+                             f_spaces BOOLEAN, f_special_data_type STRING)
+  RETURNS (STRING, BOOLEAN, STRING)
+  
+  IF f_nulls = FALSE AND f_input IS NULL
+  THEN
+    RETURN f_input, FALSE, "BAD_NULLS"
+  END IF
+
+  IF f_special_data_type IS NULL
+  THEN
+    IF f_special_characters = FALSE AND fgl_regex(f_input,"\~\#\$\%\^\&\*\(\)\+\"\{\}\|\<\>\?\-\=\[\]\/")
+    THEN
+      RETURN f_input, FALSE, "BAD_CHARS"
+    END IF
+
+    IF f_safe_special_characters = FALSE AND fgl_regex(f_input,"\@\_\,\.\!\'\:\;")
+    THEN
+      RETURN f_input, FALSE, "BAD_CHARS_2"
+    END IF
+
+    IF f_numerals = FALSE AND fgl_regex(f_input,"0123456789")
+    THEN
+      RETURN f_input, FALSE, "BAD_NUMERALS"
+    END IF
+
+    IF f_letters = FALSE AND fgl_regex(f_input,"abcdefghijklmnopqrstuvwxyz") #This should include foriegn letters too at some point.
+    THEN
+      RETURN f_input, FALSE, "BAD_LETTERS"
+    END IF
+
+    IF f_spaces = FALSE AND fgl_regex(f_input," ")
+    THEN
+      RETURN f_input, FALSE, "BAD_SPACES"
+    END IF
+  END IF 
+    
+  IF f_special_data_type = "EMAIL" AND f_input MATCHES "*@*.*" = FALSE
+  THEN
+    RETURN f_input, FALSE, "BAD_EMAIL"
+  ELSE    
+    #Can't use this as JAVA is not supported in GMI otherwise much cleaner solution...
+    {IF fgl_regex(f_input,"\S+@\S+\.\S+") = FALSE
+    THEN
+      RETURN f_input, FALSE, "BAD_EMAIL"
+    END IF}
+  END IF
+
+  IF f_special_data_type = "URL"
+  THEN
+    LET f_input = util.Strings.urlEncode(f_input) #Encode the data so it's safe and computer friendly
+  END IF   
+
+  RETURN f_input, TRUE, "OK"
+    
+END FUNCTION #*****************************************************************#
+#
+#
+#
+#
+# This is the easiest way to regex input data however because JAVA is not currently supported by GMI,
+# we have to use a FGL work around. Hopefully we will get a native FGL regex in the future...
+{
+FUNCTION contains_characters(f_string STRING,f_characters STRING) #************#
+  RETURNS BOOLEAN
+  
+  DEFINE
+    f_parameter STRING,
+    f_pattern Pattern,
+    f_matcher Matcher,
+
+  LET f_parameter = "[" || f_characters || "]" 
+  LET f_pattern = Pattern.compile(f_parameter)
+  LET f_matcher = f_pattern.matcher(f_string)
+
+  IF f_matcher.matches()
+  THEN
+    RETURN TRUE
+  END IF
+
+  RETURN FALSE
+    
+END FUNCTION #*****************************************************************#
+}
+#
+#
+#
+#
+FUNCTION fgl_regex(f_string STRING,f_characters STRING) #**********************#
+  RETURNS BOOLEAN
+  
+  DEFINE
+    f_integer INTEGER,
+    f_integer2 INTEGER
+        
+  LET f_string = f_string.toUpperCase()
+  LET f_characters = f_characters.toUpperCase()
+  FOR f_integer = 1 TO f_string.getLength()
+    FOR f_integer2 = 1 TO f_characters.getLength()
+      IF f_characters.getCharAt( f_integer2 ) = f_string.getCharAt( f_integer )
+      THEN
+        RETURN TRUE 
+      END IF
+    END FOR
+  END FOR
+  
+  RETURN FALSE
+    
+END FUNCTION #*****************************************************************#
+#
+#
+#
+#
+FUNCTION set_localised_image(f_image STRING)
+  RETURNS STRING
+  
+  IF global_config.default_language.toUpperCase() = global_var.language_short.toUpperCase()
+  THEN
+    RETURN f_image #Default language being used. Return default image
+  ELSE
+    IF global_config.local_images_available.search("",global_var.language_short.toUpperCase())
+    THEN
+      RETURN f_image || "_" || global_var.language_short.toLowerCase() #Localisation found. Return localised image
+    END IF
+  END IF
+    
+  RETURN f_image #We should never reach this point but just incase...
+    
+END FUNCTION
+#
+#
+#
+#
+FUNCTION close_app() #*********************************************************#
+  DISPLAY "Application exited successfully!"
+  EXIT PROGRAM 1
 END FUNCTION #*****************************************************************#

@@ -14,9 +14,9 @@ IMPORT FGL fgldialog
     m_form ui.Form,
     m_dom_node1 om.DomNode,
     m_index INTEGER,
-    m_ok SMALLINT,
-    m_status STRING,
-    f_current_DT DATETIME YEAR TO SECOND
+    m_ok BOOLEAN,
+    m_status STRING
+    #f_current_DT DATETIME YEAR TO SECOND
 
   PRIVATE DEFINE
     m_username STRING,
@@ -133,340 +133,318 @@ FUNCTION initialise_app() #****************************************************#
     END IF
   END IF
     
-END FUNCTION
-
-################################################################################
+END FUNCTION #*****************************************************************#
 
 ################################################################################
 #Individual window/form functions...
 ################################################################################
 
-FUNCTION run_splash_screen() #Application Splashscreen window function
+FUNCTION run_splash_screen() #*************************************************#
 
-    DEFINE
-        f_result STRING
+  DEFINE
+    f_result STRING
+      
+  OPEN WINDOW w WITH FORM "splash_screen"
+
+  INITIALIZE f_result TO NULL
+  TRY 
+    CALL ui.Interface.frontCall("webcomponent","call",["formonly.splashwc","setLocale",global_var.language_short],[f_result])
+  CATCH
+    ERROR err_get(status)
+    DISPLAY err_get(status)
+  END TRY
+  
+  LET TERMINATE = FALSE
+  INITIALIZE global_var.instruction TO NULL
+  LET m_window = ui.Window.getCurrent()
+
+  IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
+  THEN
+    CALL m_window.setText(global_var.title)
+  ELSE
+    IF global_config.enable_mobile_title = FALSE
+    THEN
+      CALL m_window.setText("")
+    ELSE
+      CALL m_window.setText(global_var.title)
+    END IF
+  END IF
+  
+  WHILE TERMINATE = FALSE
+    MENU
+
+    ON TIMER global_config.splash_duration
+      LET TERMINATE = TRUE
+      EXIT MENU
+
+    BEFORE MENU
+      CALL DIALOG.setActionHidden("close",1)
+
+    ON ACTION CLOSE
+      LET TERMINATE = TRUE
+      EXIT MENU
+          
+    END MENU
+  END WHILE
+
+  IF global_config.enable_login = TRUE
+  THEN
+    CLOSE WINDOW w
+    CALL login_screen() 
+  ELSE
+    CLOSE WINDOW w
+    CALL open_application()
+  END IF
+
+END FUNCTION #*****************************************************************#
+#
+#
+#
+#
+FUNCTION login_screen() #******************************************************#
+
+  DEFINE
+    f_install_type SMALLINT,
+    f_username STRING,
+    f_password STRING,
+    f_confirm_password STRING,
+    f_user_type STRING,
+    f_email STRING,
+    f_telephone STRING,
+    f_hashed_string STRING
+            
         
-    OPEN WINDOW w WITH FORM "splash_screen"
+  CALL function_lib.check_new_install()
+    RETURNING f_install_type
 
-    INITIALIZE f_result TO NULL
-    TRY 
-        CALL ui.Interface.frontCall("webcomponent","call",["formonly.splashwc","setLocale",global_var.language_short],[f_result])
-    CATCH
-        ERROR err_get(status)
-        DISPLAY err_get(status)
-    END TRY
-    
+  IF f_install_type == 2
+  THEN
+    EXIT PROGRAM 9999 #DB ERROR
+  END IF
+
+  IF f_install_type == 1 #Fresh Install... Open new user create before running
+  THEN
+    OPEN WINDOW w WITH FORM "tool_new_install"
+
     LET TERMINATE = FALSE
     INITIALIZE global_var.instruction TO NULL
     LET m_window = ui.Window.getCurrent()
 
     IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
     THEN
+      CALL m_window.setText(global_var.title)
+    ELSE
+      IF global_config.enable_mobile_title = FALSE
+      THEN
+        CALL m_window.setText("")
+      ELSE
         CALL m_window.setText(global_var.title)
-    ELSE
-        IF global_config.enable_mobile_title = FALSE
-        THEN
-            CALL m_window.setText("")
-        ELSE
-            CALL m_window.setText(global_var.title)
-        END IF
+      END IF
     END IF
-
-    LET TERMINATE = FALSE
-
-    WHILE TERMINATE = FALSE
-        MENU
-
-        ON TIMER global_config.splash_duration
-            LET TERMINATE = TRUE
-            EXIT MENU
-
-        BEFORE MENU
-            CALL DIALOG.setActionHidden("close",1)
-
-        ON ACTION CLOSE
-            LET TERMINATE = TRUE
-            EXIT MENU
-              
-        END MENU
-    END WHILE
-
-    IF global_config.enable_login = TRUE
-    THEN
-        CLOSE WINDOW w
-        CALL login_screen() 
-    ELSE
-        CLOSE WINDOW w
-        CALL open_application()
-    END IF
-
-END FUNCTION
-#
-#
-#
-#
-FUNCTION login_screen() #Local Login window function
-
-    DEFINE
-        f_install_type INTEGER,
-        f_username STRING,
-        f_password STRING,
-        f_confirm_password STRING,
-        f_user_type STRING,
-        f_email STRING,
-        f_telephone STRING,
-        f_hashed_string STRING
-            
-        
-    CALL check_new_install()
-        RETURNING f_install_type
-
-    IF f_install_type == 2
-    THEN
-        EXIT PROGRAM 9999
-    END IF
-
-    IF f_install_type == 1 #Fresh Install... Open new user create before running
-    THEN
-        OPEN WINDOW w WITH FORM "tool_new_install"
-
-        LET TERMINATE = FALSE
-        INITIALIZE global_var.instruction TO NULL
-        LET m_window = ui.Window.getCurrent()
-
-        IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
-        THEN
-            CALL m_window.setText(global_var.title)
-        ELSE
-            IF global_config.enable_mobile_title = FALSE
-            THEN
-                CALL m_window.setText("")
-            ELSE
-                CALL m_window.setText(global_var.title)
-            END IF
-        END IF
-        
-        INPUT f_username, f_password, f_confirm_password, f_user_type, f_email, f_telephone
-            FROM username, password, confirm_password, user_type, email, telephone ATTRIBUTE(UNBUFFERED)
-            
-            BEFORE INPUT
-                CALL DIALOG.setActionHidden("accept",1)
-                CALL DIALOG.setActionHidden("cancel",1)
-
-            ON CHANGE username
-                LET f_username = downshift(f_username)
-
-            ON ACTION bt_submit
-                ACCEPT INPUT
-
-            ON ACTION CLOSE
-                EXIT INPUT
-                
-            AFTER INPUT
-                #Validate Input
-                CALL validate_input_data(f_username, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, "") RETURNING f_username, m_ok, m_status 
-                IF m_ok = FALSE
-                THEN
-                    CALL fgl_winmessage(" ",%"tool.string.Bad_Username","stop")
-                    NEXT FIELD username
-                END IF
-                CALL validate_input_data(f_password, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, "") RETURNING f_password, m_ok, m_status 
-                IF m_ok = FALSE
-                THEN
-                    CALL fgl_winmessage(" ",%"tool.string.Bad_Password","stop")
-                    NEXT FIELD password
-                END IF
-                CALL validate_input_data(f_confirm_password, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, "") RETURNING f_confirm_password, m_ok, m_status 
-                IF m_ok = FALSE
-                THEN
-                    CALL fgl_winmessage(" ",%"tool.string.Bad_Password","stop")
-                    NEXT FIELD password
-                END IF
-                IF f_password != f_confirm_password 
-                THEN
-                    CALL fgl_winmessage(" ",%"tool.string.Mismatch_Password","stop")
-                    INITIALIZE f_confirm_password TO NULL
-                    NEXT FIELD confirm_password
-                END IF
-                IF f_user_type IS NULL
-                THEN
-                    CALL fgl_winmessage(" ",%"tool.string.No_User_Type","stop")
-                    NEXT FIELD user_type
-                END IF      
-                CALL validate_input_data(f_email, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, "EMAIL") RETURNING f_email, m_ok, m_status 
-                IF m_ok = FALSE
-                THEN
-                    CALL fgl_winmessage(" ",%"tool.string.Bad_Email","stop")
-                    NEXT FIELD email
-                END IF
-                CALL validate_input_data(f_telephone, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, "") RETURNING f_telephone, m_ok, m_status 
-                IF m_ok = FALSE
-                THEN
-                    CALL fgl_winmessage(" ",%"tool.string.Bad_Telephone","stop")
-                    NEXT FIELD telephone
-                END IF
-
-                SELECT COUNT(*) INTO m_index FROM local_accounts WHERE username = f_username
-                IF m_index > 0 
-                THEN
-                    CALL fgl_winmessage(" ",%"tool.string.Username_Exists","stop")
-                    NEXT FIELD username    
-                END IF
-                LET f_username = f_username.toLowerCase()
-                CALL hash_password(f_password) RETURNING m_ok, f_hashed_string
-                 
-                TRY
-                    INSERT INTO local_accounts VALUES(NULL,f_username,f_hashed_string,f_email,f_telephone,NULL,f_user_type)
-                CATCH
-                    CALL fgl_winmessage("User Create Tool","ERROR: could not create user in the database -" || sqlca.sqlcode,"stop")
-                    EXIT PROGRAM 999
-                END TRY
-
-                IF f_email IS NULL THEN LET f_email = " " END IF
-                IF f_telephone IS NULL THEN LET f_telephone = " " END IF
-                                                         
-                CALL fgl_winmessage(%"tool.string.Create_User",%"tool.string.Status" || ": " || "OK" || "\n" ||
-                                                               %"tool.string.Username" || ": " || f_username || "\n" ||
-                                                               %"tool.string.Password" || ": " || f_password || "\n" ||
-                                                               %"tool.string.Hashed_Password" || ": " || f_hashed_string || "\n" ||
-                                                               %"tool.string.User_Type" || ": " || f_user_type || "\n" ||
-                                                               %"tool.string.Email" || ": " || f_email || "\n" ||
-                                                               %"tool.string.Telephone" || ": " || f_telephone, "information") 
-
-                LET global_var.instruction = "proceed"
-        END INPUT
-
-        CASE global_var.instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
-            WHEN "proceed"
-                CLOSE WINDOW w
-                CALL login_screen()
-            WHEN "go_back"
-                CLOSE WINDOW w
-                CALL admin_tools()
-            WHEN "logout"
-                INITIALIZE global_var.user TO NULL
-                INITIALIZE global_var.logged_in TO NULL
-                DISPLAY "Logged out successfully!"
-                CLOSE WINDOW w
-                CALL login_screen()
-            OTHERWISE
-                CALL ui.Interface.refresh()
-                CALL close_app()
-        END CASE
-    ELSE
-        OPEN WINDOW w WITH FORM "main"
-        
-        #Initialize window specific variables
       
-        LET TERMINATE = FALSE
-        INITIALIZE global_var.instruction TO NULL
-        LET m_window = ui.Window.getCurrent()
-        LET m_dom_node1 = m_window.findNode("Image","splash")
+    INPUT f_username, f_password, f_confirm_password, f_user_type, f_email, f_telephone
+      FROM username, password, confirm_password, user_type, email, telephone ATTRIBUTE(UNBUFFERED)
+          
+      BEFORE INPUT
+        CALL DIALOG.setActionHidden("accept",1)
+        CALL DIALOG.setActionHidden("cancel",1)
 
-        IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
+      ON CHANGE username
+        LET f_username = downshift(f_username)
+
+      ON ACTION bt_submit
+        ACCEPT INPUT
+
+      ON ACTION CLOSE
+        EXIT INPUT
+          
+      AFTER INPUT
+        #Validate Input
+        CALL function_lib.validate_input_data(f_username, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, "") RETURNING f_username, m_ok, m_status 
+        IF m_ok = FALSE
         THEN
-            CALL m_window.setText(global_var.title)
-        ELSE
-            IF global_config.enable_mobile_title = FALSE
-            THEN
-                CALL m_window.setText("")
-            ELSE
-                CALL m_window.setText(global_var.title)
-            END IF
+          CALL fgl_winmessage(" ",%"tool.string.Bad_Username","stop")
+          NEXT FIELD username
         END IF
-
-        #We need to adjust the image so it appears correctly in GDC,GBC,GMA and GMI
-
-        #Set the login splash size if we are running in GDC
-        IF global_var.info.deployment_type = "GDC"
+        CALL validate_input_data(f_password, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, "") RETURNING f_password, m_ok, m_status 
+        IF m_ok = FALSE
         THEN
-            CALL m_dom_node1.setAttribute("sizePolicy","dynamic")
-            CALL m_dom_node1.setAttribute("width",global_config.splash_width)
-            CALL m_dom_node1.setAttribute("height",global_config.splash_height)
+          CALL fgl_winmessage(" ",%"tool.string.Bad_Password","stop")
+          NEXT FIELD password
         END IF
-
-        #Set the login screen image to stretch both in GBC
-        IF global_var.info.deployment_type = "GBC" 
+        CALL validate_input_data(f_confirm_password, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, "") RETURNING f_confirm_password, m_ok, m_status 
+        IF m_ok = FALSE
         THEN
-            CALL m_dom_node1.setAttribute("stretch","both")
+          CALL fgl_winmessage(" ",%"tool.string.Bad_Password","stop")
+          NEXT FIELD password
         END IF
+        IF f_password != f_confirm_password 
+        THEN
+          CALL fgl_winmessage(" ",%"tool.string.Mismatch_Password","stop")
+          INITIALIZE f_confirm_password TO NULL
+          NEXT FIELD confirm_password
+        END IF
+        IF f_user_type IS NULL
+        THEN
+          CALL fgl_winmessage(" ",%"tool.string.No_User_Type","stop")
+          NEXT FIELD user_type
+        END IF      
+        CALL validate_input_data(f_email, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, "EMAIL") RETURNING f_email, m_ok, m_status 
+        IF m_ok = FALSE
+        THEN
+          CALL fgl_winmessage(" ",%"tool.string.Bad_Email","stop")
+          NEXT FIELD email
+        END IF
+        CALL validate_input_data(f_telephone, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, "") RETURNING f_telephone, m_ok, m_status 
+        IF m_ok = FALSE
+        THEN
+          CALL fgl_winmessage(" ",%"tool.string.Bad_Telephone","stop")
+          NEXT FIELD telephone
+        END IF
+        
+        SELECT COUNT(*) INTO m_index FROM local_accounts WHERE username = f_username
+        IF m_index > 0 
+        THEN
+          CALL fgl_winmessage(" ",%"tool.string.Username_Exists","stop")
+          NEXT FIELD username    
+        END IF
+        
+        LET f_username = f_username.toLowerCase()
+        CALL hash_password(f_password) RETURNING m_ok, f_hashed_string
+         
+        TRY
+          INSERT INTO local_accounts VALUES(NULL,f_username,f_hashed_string,f_email,f_telephone,NULL,f_user_type)
+        CATCH
+          CALL fgl_winmessage("User Create Tool","ERROR: could not create user in the database -" || sqlca.sqlcode,"stop")
+          EXIT PROGRAM 999
+        END TRY
 
-        #Set the login screen image to the corresponding language loaded
-        CALL set_localised_image("splash")
-            RETURNING m_image
-        CALL m_dom_node1.setAttribute("image",m_image)
+        IF f_email IS NULL THEN LET f_email = " " END IF
+        IF f_telephone IS NULL THEN LET f_telephone = " " END IF
+                                                 
+        CALL fgl_winmessage(%"tool.string.Create_User",%"tool.string.Status" || ": " || "OK" || "\n" ||
+                                                       %"tool.string.Username" || ": " || f_username || "\n" ||
+                                                       %"tool.string.Password" || ": " || f_password || "\n" ||
+                                                       %"tool.string.Hashed_Password" || ": " || f_hashed_string || "\n" ||
+                                                       %"tool.string.User_Type" || ": " || f_user_type || "\n" ||
+                                                       %"tool.string.Email" || ": " || f_email || "\n" ||
+                                                       %"tool.string.Telephone" || ": " || f_telephone, "information") 
 
-        INPUT m_username, m_password, m_remember FROM username, password, remember ATTRIBUTE(UNBUFFERED)
+        LET global_var.instruction = "proceed"
+    END INPUT
 
-            ON TIMER global_config.timed_checks_time
-                CALL connection_test()
-                CALL timed_upload_queue_data()
-            
-            BEFORE INPUT
-                CALL connection_test()
-                LET m_form = m_window.getForm()
-                CALL DIALOG.setActionHidden("accept",1)
-                CALL DIALOG.setActionHidden("cancel",1)
-                CALL get_local_remember()
-                    RETURNING m_ok, m_remember, m_username
+    CASE global_var.instruction #Form Controller
+      WHEN "proceed"
+        CLOSE WINDOW w
+        CALL login_screen()
+      WHEN "go_back"
+        CLOSE WINDOW w
+        CALL function_lib.close_app()
+      WHEN "logout"
+        INITIALIZE global_var.user TO NULL
+        INITIALIZE global_var.logged_in TO NULL
+        DISPLAY "Logged out successfully!"
+        CLOSE WINDOW w
+        CALL login_screen()
+      OTHERWISE
+        CALL ui.Interface.refresh()
+        CALL function_lib.close_app()
+    END CASE
+  ELSE
+    OPEN WINDOW w WITH FORM "login" #At least 1 user in DB, continue with login
+      
+    LET TERMINATE = FALSE
+    INITIALIZE global_var.instruction TO NULL
+    LET m_window = ui.Window.getCurrent()
+    LET m_dom_node1 = m_window.findNode("Image","splash")
 
-            ON CHANGE username
-                LET m_username = m_username.toLowerCase()
-                CALL refresh_local_remember(m_username, m_remember)
-                    RETURNING m_ok
-
-            ON CHANGE remember
-                CALL refresh_local_remember(m_username, m_remember)
-                    RETURNING m_ok
-
-            ON CHANGE password
-                CALL refresh_local_remember(m_username, m_remember)
-                    RETURNING m_ok
-
-            ON ACTION bt_login
-                ACCEPT INPUT
-
-            ON ACTION CLOSE
-                EXIT INPUT
-                
-            AFTER INPUT
-              #Validate Input
-              CALL validate_input_data(m_username, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, "") RETURNING m_username, m_ok, m_status 
-              IF m_ok = FALSE
-              THEN
-                  CALL fgl_winmessage(" ",%"main.string.Bad_Username","stop")
-                  NEXT FIELD username
-              END IF
-              CALL validate_input_data(m_password, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, "") RETURNING m_password, m_ok, m_status 
-              IF m_ok = FALSE
-              THEN
-                  CALL fgl_winmessage(" ",%"main.string.Bad_Password","stop")
-                  NEXT FIELD password
-              END IF
-              #Check Password
-              CALL check_password(m_username,m_password) RETURNING m_ok
-              INITIALIZE m_password TO NULL #Clean down the plain text password
-              
-              IF m_ok = TRUE
-              THEN
-                  LET global_var.instruction = "connection"
-                  EXIT INPUT
-              ELSE
-                  CALL fgl_winmessage(" ",%"main.string.Incorrect_Username", "information")
-                  NEXT FIELD password
-              END IF
-                
-        END INPUT
-
-        CASE global_var.instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
-            WHEN "connection"
-                CLOSE WINDOW w
-                CALL open_application()
-            OTHERWISE
-                CALL ui.Interface.refresh()
-                CALL close_app()
-        END CASE
+    IF global_var.info.deployment_type <> "GMA" AND global_var.info.deployment_type <> "GMI"
+    THEN
+      CALL m_window.setText(global_var.title)
+    ELSE
+      IF global_config.enable_mobile_title = FALSE
+      THEN
+        CALL m_window.setText("")
+      ELSE
+        CALL m_window.setText(global_var.title)
+      END IF
     END IF
+
+    #Set the login screen image to the corresponding language loaded
+    CALL function_lib.set_localised_image("splash")
+        RETURNING m_image
+    CALL m_dom_node1.setAttribute("image",m_image)
+
+    INPUT m_username, m_password, m_remember FROM username, password, remember ATTRIBUTE(UNBUFFERED)
+
+      ON TIMER global_config.timed_checks_time
+        CALL connection_test()
+          
+      BEFORE INPUT
+        CALL connection_test()
+        LET m_form = m_window.getForm()
+        CALL DIALOG.setActionHidden("accept",1)
+        CALL DIALOG.setActionHidden("cancel",1)
+        CALL function_lib.get_local_remember()
+          RETURNING m_ok, m_remember, m_username
+
+      ON CHANGE username
+        LET m_username = m_username.toLowerCase()
+        CALL function_lib.refresh_local_remember(m_username, m_remember)
+          RETURNING m_ok
+
+      ON CHANGE remember
+        CALL function_lib.refresh_local_remember(m_username, m_remember)
+          RETURNING m_ok
+
+      ON CHANGE password
+        CALL function_lib.refresh_local_remember(m_username, m_remember)
+          RETURNING m_ok
+
+      ON ACTION bt_login
+        ACCEPT INPUT
+
+      ON ACTION CLOSE
+        EXIT INPUT
+              
+      AFTER INPUT
+        #Validate Input
+        CALL function_lib.validate_input_data(m_username, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, "") RETURNING m_username, m_ok, m_status 
+        IF m_ok = FALSE
+        THEN
+          CALL fgl_winmessage(" ",%"main.string.Bad_Username","stop")
+          NEXT FIELD username
+        END IF
+        CALL function_lib.validate_input_data(m_password, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, "") RETURNING m_password, m_ok, m_status 
+        IF m_ok = FALSE
+        THEN
+          CALL fgl_winmessage(" ",%"main.string.Bad_Password","stop")
+          NEXT FIELD password
+        END IF
+        #Check Password
+        CALL function_lib.check_password(m_username,m_password) RETURNING m_ok
+        INITIALIZE m_password TO NULL #Clean down the plain text password
+        
+        IF m_ok = TRUE
+        THEN
+          LET global_var.instruction = "connection"
+          EXIT INPUT
+        ELSE
+          CALL fgl_winmessage(" ",%"main.string.Incorrect_Username", "information")
+          NEXT FIELD password
+        END IF
+              
+      END INPUT
+
+      CASE global_var.instruction #Depending on the instruction, we load up new windows/forms within the application whithout unloading.
+        WHEN "connection"
+          CLOSE WINDOW w
+          CALL open_application()
+        OTHERWISE
+          CALL ui.Interface.refresh()
+          CALL close_app()
+      END CASE
+  END IF
 END FUNCTION
 #
 #
@@ -479,51 +457,32 @@ FUNCTION open_application() #First Application window function (Demo purposes lo
 END FUNCTION
 
 ################################################################################
-
-################################################################################
 #Module Functions...
 ################################################################################
 
-FUNCTION connection_test() #Test online connectivity, call this whenever opening new window!
-    IF global_config.enable_timed_connect = TRUE
-    THEN
-        CALL test_connectivity(global_var.info.deployment_type)
-        IF global_var.online = "NONE" AND global_var.info.deployment_type = "GMA" OR global_var.online = "NONE" AND global_var.info.deployment_type = "GMI"
-        THEN
-            IF global_config.enable_mobile_title = FALSE
-            THEN
-                CALL m_window.setText(%"main.string.Working_Offline")
-            ELSE
-                CALL m_window.setText(%"main.string.Working_Offline" || global_var.title)
-            END IF
-        ELSE
-            IF global_config.enable_mobile_title = FALSE
-            THEN
-                CALL m_window.setText("")
-            ELSE
-                CALL m_window.setText(global_var.title)
-            END IF
-        END IF
-    END IF
-END FUNCTION
-#
-#
-#
-#
-FUNCTION update_connection_image(f_image) #Used to update connection image within the demo about page
+FUNCTION connection_test() 
 
-    DEFINE
-        f_image STRING
-    
-    LET m_form = m_window.getForm()
-    IF global_var.online = "NONE"
+  IF global_config.enable_timed_connect = TRUE
+  THEN
+    CALL function_lib.test_connectivity(global_var.info.deployment_type)
+    IF global_var.online = "NONE" AND global_var.info.deployment_type = "GMA" OR global_var.online = "NONE" AND global_var.info.deployment_type = "GMI"
     THEN
-        CALL m_form.setElementImage(f_image,"disconnected")
-        DISPLAY %"main.string.Services_Disconnected" TO connected
+      IF global_config.enable_mobile_title = FALSE
+      THEN
+        CALL m_window.setText(%"main.string.Working_Offline")
+      ELSE
+        CALL m_window.setText(%"main.string.Working_Offline" || global_var.title)
+      END IF
     ELSE
-        CALL m_form.setElementImage(f_image,"connected")
-        DISPLAY %"main.string.Services_Connected" TO connected
-    END IF 
+      IF global_config.enable_mobile_title = FALSE
+      THEN
+        CALL m_window.setText("")
+      ELSE
+        CALL m_window.setText(global_var.title)
+      END IF
+    END IF
+  END IF
+    
 END FUNCTION
 
 ################################################################################
