@@ -105,7 +105,6 @@
       <File filePath="database/local.db"/>
     </Library>
     <Library binaryName="Library" dependencies="455109296" id="212784684" label="Library">
-      <File filePath="src/db_function_lib.4gl"/>
       <File filePath="src/function_lib.4gl"/>
     </Library>
     <Library binaryName="Localisation Files (defaults)" id="-1082203495" label="Localisation Files (defaults)">
