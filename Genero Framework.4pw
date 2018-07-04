@@ -116,6 +116,7 @@
       <VirtualFolder label="defaults (en)">
         <File filePath="src/lang_defaults/common_per.str"/>
         <File filePath="src/lang_defaults/common_string.str"/>
+        <File filePath="src/lang_defaults/error_string.str"/>
       </VirtualFolder>
     </Library>
     <Library binaryName="Resources" id="-221197163" label="Resources">

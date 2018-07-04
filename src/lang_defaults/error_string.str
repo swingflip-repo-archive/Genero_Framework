@@ -1,0 +1,6 @@
+"error.string.ERROR_1001"="ERROR 1001:\nFailed to Initialise Global Variables."
+"error.string.ERROR_1002"="ERROR 1002:\nFailed To Initialise Tracking Variables."
+"error.string.ERROR_1003"="ERROR 1003:\nFailed To Prune Local Stat Table."
+"error.string.ERROR_1004"="ERROR 1004:\nFailed To Get Local Settings."
+"error.string.ERROR_1005"="ERROR 1005:\nFailed To Refresh Local Settings."
+"error.string.ERROR_1006"="ERROR 1006:\nFailed To Load Payload In To Queue."

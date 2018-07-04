@@ -88,7 +88,7 @@ FUNCTION initialise_app() #****************************************************#
           
   IF m_ok = FALSE
   THEN
-    CALL fgl_winMessage(global_var.title, %"common.string.ERROR_1001", "stop")
+    CALL fgl_winMessage(global_var.title, %"error.string.ERROR_1001", "stop")
     EXIT PROGRAM 1001
   END IF
 
