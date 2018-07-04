@@ -1,8 +1,10 @@
 #File Types
 .DS_Store
+Thumbs.db
 *.4pwcfg
 *.4pwvs
 *.4pwdb
 
 #Build Folders
 bin/
+dbbin/

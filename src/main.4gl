@@ -43,12 +43,11 @@ FUNCTION load_localisation(f_locale STRING, f_pre_window SMALLINT) #***********#
   LET global_var.language_short = f_stringbuffer.subString(1,2)
 
   #Load language pack if exists otherwise stick with the default pack
-
+  
   IF os.Path.exists(os.Path.join(base.Application.getProgramDir(), f_locale)) #i.e. en_GB or en_US
   THEN
     LET global_var.language = f_locale
     LET f_localisation_path = os.Path.join(base.Application.getProgramDir(), global_var.language)
-    DISPLAY f_localisation_path
     CALL base.Application.reloadResources(f_localisation_path)
     LET f_require_reload = TRUE
   ELSE
@@ -57,7 +56,6 @@ FUNCTION load_localisation(f_locale STRING, f_pre_window SMALLINT) #***********#
     THEN
       LET global_var.language = f_locale
       LET f_localisation_path = os.Path.join(base.Application.getProgramDir(), global_var.language)
-      DISPLAY f_localisation_path
       CALL base.Application.reloadResources(f_localisation_path)
       LET f_require_reload = TRUE
     END IF

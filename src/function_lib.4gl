@@ -167,7 +167,7 @@ FUNCTION test_connectivity(f_deployment_type STRING) #*************************#
           DISPLAY "HTTP Error (" || f_resp.getStatusCode() || ") " || f_resp.getStatusDescription()
         END IF
         LET f_connectivity = "NONE"
-        MESSAGE %"function.lib.string.Working_Offline"
+        MESSAGE %"common.string.Working_Offline"
       ELSE
         LET f_connectivity = "WIFI"
       END IF
@@ -177,7 +177,7 @@ FUNCTION test_connectivity(f_deployment_type STRING) #*************************#
         DISPLAY "ERROR :" || STATUS || " (" || SQLCA.SQLERRM || ")"
       END IF
       LET f_connectivity = "NONE"
-      MESSAGE %"function.lib.string.Working_Offline"
+      MESSAGE %"common.string.Working_Offline"
     END TRY
   END IF
 
@@ -225,7 +225,7 @@ FUNCTION capture_local_stats(f_info) #*****************************************#
 
   IF sqlca.sqlcode <> 0
   THEN
-    CALL fgl_winmessage(%"function.lib.string.Fatal_Error", %"function.lib.string.ERROR_1002", "stop")
+    CALL fgl_winmessage(%"common.string.Fatal_Error", %"function.lib.string.ERROR_1002", "stop")
     EXIT PROGRAM 1002
   END IF
 
@@ -242,7 +242,7 @@ FUNCTION capture_local_stats(f_info) #*****************************************#
 
     IF sqlca.sqlcode <> 0
     THEN
-      CALL fgl_winmessage(%"function.lib.string.Fatal_Error", %"function.lib.string.ERROR_1003", "stop")
+      CALL fgl_winmessage(%"common.string.Fatal_Error", %"function.lib.string.ERROR_1003", "stop")
       EXIT PROGRAM 1003
     END IF
   END IF
@@ -396,7 +396,7 @@ FUNCTION refresh_local_remember(f_username STRING,f_remember BOOLEAN) #********#
 
   IF sqlca.sqlcode <> 0
   THEN
-    CALL fgl_winmessage(%"function.lib.string.Fatal_Error", %"function.lib.string.ERROR_1005", "stop")
+    CALL fgl_winmessage(%"common.string.Fatal_Error", %"function.lib.string.ERROR_1005", "stop")
     EXIT PROGRAM 1005
   ELSE
     RETURN TRUE

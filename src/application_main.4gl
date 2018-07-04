@@ -34,8 +34,8 @@ FUNCTION initialise_app() #****************************************************#
   CALL ui.Interface.frontCall("standard", "feInfo", "screenResolution", global_var.info.resolution)
 
   #Set global application details here...
-  LET global_var.application_title =%"main.string.App_Title"
-  LET global_var.application_version =%"main.string.App_Version"
+  LET global_var.application_title =%"common.string.App_Title"
+  LET global_var.application_version =%"common.string.App_Version"
   LET global_var.title =  global_var.application_title || " " || global_var.application_version
         
   #BREAKPOINT #Uncomment to step through application
@@ -88,7 +88,7 @@ FUNCTION initialise_app() #****************************************************#
           
   IF m_ok = FALSE
   THEN
-    CALL fgl_winMessage(global_var.title, %"main.string.ERROR_1001", "stop")
+    CALL fgl_winMessage(global_var.title, %"common.string.ERROR_1001", "stop")
     EXIT PROGRAM 1001
   END IF
 
@@ -263,49 +263,49 @@ FUNCTION login_screen() #******************************************************#
         CALL function_lib.validate_input_data(f_username, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, "") RETURNING f_username, m_ok, m_status 
         IF m_ok = FALSE
         THEN
-          CALL fgl_winmessage(" ",%"tool.string.Bad_Username","stop")
+          CALL fgl_winmessage(" ",%"common.string.Bad_Username","stop")
           NEXT FIELD username
         END IF
         CALL validate_input_data(f_password, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, "") RETURNING f_password, m_ok, m_status 
         IF m_ok = FALSE
         THEN
-          CALL fgl_winmessage(" ",%"tool.string.Bad_Password","stop")
+          CALL fgl_winmessage(" ",%"common.string.Bad_Password","stop")
           NEXT FIELD password
         END IF
         CALL validate_input_data(f_confirm_password, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, "") RETURNING f_confirm_password, m_ok, m_status 
         IF m_ok = FALSE
         THEN
-          CALL fgl_winmessage(" ",%"tool.string.Bad_Password","stop")
+          CALL fgl_winmessage(" ",%"common.string.Bad_Password","stop")
           NEXT FIELD password
         END IF
         IF f_password != f_confirm_password 
         THEN
-          CALL fgl_winmessage(" ",%"tool.string.Mismatch_Password","stop")
+          CALL fgl_winmessage(" ",%"common.string.Mismatch_Password","stop")
           INITIALIZE f_confirm_password TO NULL
           NEXT FIELD confirm_password
         END IF
         IF f_user_type IS NULL
         THEN
-          CALL fgl_winmessage(" ",%"tool.string.No_User_Type","stop")
+          CALL fgl_winmessage(" ",%"common.string.No_User_Type","stop")
           NEXT FIELD user_type
         END IF      
         CALL validate_input_data(f_email, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, "EMAIL") RETURNING f_email, m_ok, m_status 
         IF m_ok = FALSE
         THEN
-          CALL fgl_winmessage(" ",%"tool.string.Bad_Email","stop")
+          CALL fgl_winmessage(" ",%"common.string.Bad_Email","stop")
           NEXT FIELD email
         END IF
         CALL validate_input_data(f_telephone, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, "") RETURNING f_telephone, m_ok, m_status 
         IF m_ok = FALSE
         THEN
-          CALL fgl_winmessage(" ",%"tool.string.Bad_Telephone","stop")
+          CALL fgl_winmessage(" ",%"common.string.Bad_Telephone","stop")
           NEXT FIELD telephone
         END IF
         
         SELECT COUNT(*) INTO m_index FROM local_accounts WHERE username = f_username
         IF m_index > 0 
         THEN
-          CALL fgl_winmessage(" ",%"tool.string.Username_Exists","stop")
+          CALL fgl_winmessage(" ",%"common.string.Username_Exists","stop")
           NEXT FIELD username    
         END IF
         
@@ -322,13 +322,13 @@ FUNCTION login_screen() #******************************************************#
         IF f_email IS NULL THEN LET f_email = " " END IF
         IF f_telephone IS NULL THEN LET f_telephone = " " END IF
                                                  
-        CALL fgl_winmessage(%"tool.string.Create_User",%"tool.string.Status" || ": " || "OK" || "\n" ||
-                                                       %"tool.string.Username" || ": " || f_username || "\n" ||
-                                                       %"tool.string.Password" || ": " || f_password || "\n" ||
-                                                       %"tool.string.Hashed_Password" || ": " || f_hashed_string || "\n" ||
-                                                       %"tool.string.User_Type" || ": " || f_user_type || "\n" ||
-                                                       %"tool.string.Email" || ": " || f_email || "\n" ||
-                                                       %"tool.string.Telephone" || ": " || f_telephone, "information") 
+        CALL fgl_winmessage(%"common.string.Create_User",%"common.string.Status" || ": " || "OK" || "\n" ||
+                                                       %"common.per.Username" || ": " || f_username || "\n" ||
+                                                       %"common.per.Password" || ": " || f_password || "\n" ||
+                                                       %"common.string.Hashed_Password" || ": " || f_hashed_string || "\n" ||
+                                                       %"common.per.User_Type" || ": " || f_user_type || "\n" ||
+                                                       %"common.per.Email" || ": " || f_email || "\n" ||
+                                                       %"common.per.Telephone" || ": " || f_telephone, "information") 
 
         LET global_var.instruction = "proceed"
     END INPUT
@@ -412,13 +412,13 @@ FUNCTION login_screen() #******************************************************#
         CALL function_lib.validate_input_data(m_username, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, "") RETURNING m_username, m_ok, m_status 
         IF m_ok = FALSE
         THEN
-          CALL fgl_winmessage(" ",%"main.string.Bad_Username","stop")
+          CALL fgl_winmessage(" ",%"common.string.Bad_Username","stop")
           NEXT FIELD username
         END IF
         CALL function_lib.validate_input_data(m_password, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, "") RETURNING m_password, m_ok, m_status 
         IF m_ok = FALSE
         THEN
-          CALL fgl_winmessage(" ",%"main.string.Bad_Password","stop")
+          CALL fgl_winmessage(" ",%"common.string.Bad_Password","stop")
           NEXT FIELD password
         END IF
         #Check Password
@@ -430,7 +430,7 @@ FUNCTION login_screen() #******************************************************#
           LET global_var.instruction = "connection"
           EXIT INPUT
         ELSE
-          CALL fgl_winmessage(" ",%"main.string.Incorrect_Username", "information")
+          CALL fgl_winmessage(" ",%"common.string.Incorrect_Username", "information")
           NEXT FIELD password
         END IF
               
@@ -469,9 +469,9 @@ FUNCTION connection_test()
     THEN
       IF global_config.enable_mobile_title = FALSE
       THEN
-        CALL m_window.setText(%"main.string.Working_Offline")
+        CALL m_window.setText(%"common.string.Working_Offline")
       ELSE
-        CALL m_window.setText(%"main.string.Working_Offline" || global_var.title)
+        CALL m_window.setText(%"common.string.Working_Offline" || global_var.title)
       END IF
     ELSE
       IF global_config.enable_mobile_title = FALSE
