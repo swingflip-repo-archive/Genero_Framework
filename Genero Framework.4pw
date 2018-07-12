@@ -64,7 +64,22 @@
   <LanguageList version="1.0"/>
   <PlatformList version="1.0"/>
   <Group label="Packages" language="Genero">
-    <Package binaryName="MyApp_Android" dependencies="400358049,781919164,715422167,313644474" description="Android Package" label="MyApp_Android" platform="Android">
+    <Package binaryName="Genero_Framework_GAR" label="Genero_Framework_GAR" platform="Genero Application Server">
+      <DynamicProperty name="packageId" value="GGAT"/>
+      <DynamicProperty name="packageLabel" value="Generic Genero App Template"/>
+      <Directory description="Binaries" destinationDirectory="$(ProjectDir)/bin/bin" includedFiles="*.42?" label="Binaries" recursive="false" sourceDirectory="$(ProjectDir)/bin"/>
+      <Directory description="Configuration Files" destinationDirectory="$(ProjectDir)/bin/bin" includedFiles="fglprofile,*.config" label="Config" recursive="false" sourceDirectory="$(ProjectDir)/config"/>
+      <Directory description="Database" destinationDirectory="$(ProjectDir)/bin/bin/" includedFiles="*.db" label="Database" recursive="false" sourceDirectory="$(ProjectDir)/database"/>
+      <Directory description="GAS files" destinationDirectory="$(ProjectDir)/bin" includedFiles="*.xcf" label="GAS_Files" sourceDirectory="$(ProjectDir)/gas"/>
+      <Directory description="Images" destinationDirectory="$(ProjectDir)/bin/bin/images" includedFiles="*.png,*.jpg,*.ttf,my_image2font.txt" label="Images" sourceDirectory="$(ProjectDir)/images"/>
+      <Directory description="Template Library" destinationDirectory="$(ProjectDir)/bin/bin" includedFiles="*.42?" label="libdbapp" recursive="false" sourceDirectory="$(GSTSETUPDIR)/bin"/>
+      <Directory description="Studio Library" destinationDirectory="$(ProjectDir)/bin/bin" includedFiles="*.42?" label="libgst" recursive="false" sourceDirectory="$(GSTLIBRARYDIR)/bin"/>
+      <Directory description="Default Localisation Strings" destinationDirectory="$(ProjectDir)/bin/bin/defaults" includedFiles="*.42s" label="Localisation_Defaults" sourceDirectory="$(ProjectDir)/bin/defaults"/>
+      <Directory description="Resources" destinationDirectory="$(ProjectDir)/bin/bin/resources" includedFiles="*.4ad,*.4st,*.42s" label="Resources" recursive="false" sourceDirectory="$(ProjectDir)/resources"/>
+      <Directory description="Template Resources" destinationDirectory="$(ProjectDir)/bin/bin" includedFiles="mobile_dbapp.4ad,dbapp.4st" label="Resources_dbapp" recursive="false" sourceDirectory="$(GSTSETUPDIR)/styles"/>
+      <Directory description="Web Components" destinationDirectory="$(ProjectDir)/bin/bin/webcomponents" label="Webcomponents" sourceDirectory="$(ProjectDir)/webcomponents"/>
+    </Package>
+    <Package binaryName="Package_Android" dependencies="400358049,781919164,715422167,313644474" description="Android Package" label="Package_Android" platform="Android">
       <DynamicProperty name="packageId" value="com.company.myapp"/>
       <DynamicProperty name="packageLabel" value="MyApp"/>
       <Directory description="Binaries" excludedFiles="Test.42r" includedFiles="*.42?" label="Binaries" recursive="false" sourceDirectory="$(ProjectDir)/bin"/>
@@ -77,7 +92,7 @@
       <Directory description="Template Resources" includedFiles="mobile_dbapp.4ad,dbapp.4st" label="Resources_dbapp" recursive="false" sourceDirectory="$(GSTSETUPDIR)/styles"/>
       <Directory description="Web Components" destinationDirectory="$(RootDir)/webcomponents" label="Webcomponents" sourceDirectory="$(ProjectDir)/webcomponents"/>
     </Package>
-    <Package binaryName="MyApp_iOS" dependencies="400358049,781919164,715422167,313644474" description="iOS Package" label="MyApp_iOS" platform="iOS">
+    <Package binaryName="Package_iOS" dependencies="400358049,781919164,715422167,313644474" description="iOS Package" label="Package_iOS" platform="iOS">
       <DynamicProperty name="packageId" value="com.company.myapp"/>
       <DynamicProperty name="packageLabel" value="MyApp"/>
       <Directory description="Binaries" excludedFiles="Test.42r" includedFiles="*.42?" label="Binaries" recursive="false" sourceDirectory="$(ProjectDir)/bin"/>
@@ -108,6 +123,10 @@
     <Library binaryName="Database" id="455109296" label="Database">
       <File filePath="database/local.4db"/>
       <File filePath="database/local.db"/>
+    </Library>
+    <Library binaryName="GAS Files" id="-248978937" label="GAS Files">
+      <File filePath="gas/Genero_Framework.xcf"/>
+      <File filePath="gas/Genero_Framework_Linux.xcf"/>
     </Library>
     <Library binaryName="Library" dependencies="455109296" id="212784684" label="Library">
       <File filePath="src/function_lib.4gl"/>

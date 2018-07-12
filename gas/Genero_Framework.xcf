@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<APPLICATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Parent="defaultwa" xsi:noNamespaceSchemaLocation="http://www.4js.com/ns/gas/3.00/cfextwa.xsd">
+  <RESOURCE Id="res.path.Genero_Framework" Source="INTERNAL">$(res.deployment.path)</RESOURCE>
+  <EXECUTION>
+    <ENVIRONMENT_VARIABLE Id="FGLPROFILE">fglprofile</ENVIRONMENT_VARIABLE>
+    <ENVIRONMENT_VARIABLE Id="FGLRESOURCEPATH">$(res.path.Genero_Framework)/bin/resources;$(res.path.Genero_Framework)/bin/defaults</ENVIRONMENT_VARIABLE>
+    <ENVIRONMENT_VARIABLE Id="FGLIMAGEPATH">$(res.path.Genero_Framework)/bin/images/my_image2font.txt;$(res.path.Genero_Framework)/bin/images;$(res.fgldir)/lib/image2font.txt;$(FGLIMAGEPATH);..</ENVIRONMENT_VARIABLE>
+    <ENVIRONMENT_VARIABLE Id="GREDIR">$(res.gre)</ENVIRONMENT_VARIABLE>
+    <ENVIRONMENT_VARIABLE Id="FGLLDPATH">$(res.gre)/lib</ENVIRONMENT_VARIABLE>
+    <ENVIRONMENT_VARIABLE Id="DBPATH">$(res.path.Genero_Framework)/bin/database;$(DBPATH)</ENVIRONMENT_VARIABLE>
+    <ENVIRONMENT_VARIABLE Id="LANG">.fglutf8</ENVIRONMENT_VARIABLE>
+    <PATH>$(res.path.Genero_Framework)/bin</PATH>
+    <MODULE>Application.42r</MODULE>
+    <WEB_COMPONENT_DIRECTORY>$(res.path.Genero_Framework)/bin/webcomponents</WEB_COMPONENT_DIRECTORY>
+  </EXECUTION>
+</APPLICATION>
