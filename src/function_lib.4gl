@@ -7,7 +7,12 @@ SCHEMA local
 
   PUBLIC DEFINE
     global_config RECORD
-      application_database_ver INTEGER,               #Application Database Version
+      application_db_ver INTEGER,                     #Application Database Version
+      application_db_external SMALLINT,               #Toggle to use external DB or local_db.db
+      application_db_external_driver STRING,          #External DB driver if using external DB
+      application_db_external_dbname STRING,          #External DB name if using external DB
+      application_db_external_user STRING,            #External DB user if using external DB
+      application_db_external_pass STRING,            #External DB password if using external DB (Set unique password for each DB!)
       enable_geolocation SMALLINT,                    #Toggle to enable geolocation
       enable_mobile_title SMALLINT,                   #Toggle application title on mobile
       timed_checks_time INTEGER,                      #Time in seconds before running auto checks, uploads or refreshes (0 disables this globally)
@@ -744,7 +749,7 @@ FUNCTION check_database_version (f_debug SMALLINT) #***************************#
     LET f_msg = "No database version within working db, "
     TRY
       LET f_current_DT = CURRENT
-      INSERT INTO database_version VALUES(NULL, global_config.application_database_ver, f_current_DT)
+      INSERT INTO database_version VALUES(NULL, global_config.application_db_ver, f_current_DT)
     CATCH
       DISPLAY STATUS || " " || SQLERRMESSAGE
     END TRY
@@ -763,13 +768,13 @@ FUNCTION check_database_version (f_debug SMALLINT) #***************************#
 
   SELECT db_version INTO f_version FROM database_version
 
-  IF f_version != global_config.application_database_ver
+  IF f_version != global_config.application_db_ver
   THEN
     LET f_msg = f_msg.append("Database version mismatch! Running db_create_tables()...\n")
     CALL db_create_tables() #Before this runs, you need to be confident that this function will work the way you want it... You have been warned!
     TRY
       LET f_current_DT = CURRENT
-      UPDATE database_version SET db_version = global_config.application_database_ver, last_updated = f_current_DT
+      UPDATE database_version SET db_version = global_config.application_db_ver, last_updated = f_current_DT
     CATCH
       DISPLAY STATUS || " " || SQLERRMESSAGE
     END TRY
