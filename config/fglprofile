@@ -1,6 +1,11 @@
 #Default Database set up to SQLite3 local DB
 dbi.default.driver = "dbmsqt"
-dbi.database.local_db.source = "local_db.db"
+
+#External Database config (application_db_external = 1 and application_db_external_dbname is set)
+dbi.database.external_name.driver = ""
+dbi.database.external_name.source = ""
+dbi.database.external_name.user = ""
+dbi.database.external_name.pass = ""
 
 #Application localisation
 fglrun.localization.file.count = 3
