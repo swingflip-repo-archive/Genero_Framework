@@ -8,11 +8,8 @@ SCHEMA local
   PUBLIC DEFINE
     global_config RECORD
       application_db_ver INTEGER,                     #Application Database Version
-      application_db_external SMALLINT,               #Toggle to use external DB or local_db.db
-      application_db_external_driver STRING,          #External DB driver if using external DB
-      application_db_external_dbname STRING,          #External DB name if using external DB
-      application_db_external_user STRING,            #External DB user if using external DB
-      application_db_external_pass STRING,            #External DB password if using external DB (Set unique password for each DB!)
+      application_db_external SMALLINT,               #Toggle to use external DB or local.db
+      application_db_external_dbname STRING,          #External DB name if using external DB (Ties into config within FGLPROFILE)
       enable_geolocation SMALLINT,                    #Toggle to enable geolocation
       enable_mobile_title SMALLINT,                   #Toggle application title on mobile
       timed_checks_time INTEGER,                      #Time in seconds before running auto checks, uploads or refreshes (0 disables this globally)
@@ -685,21 +682,31 @@ FUNCTION openDB(f_dbname STRING,f_debug SMALLINT) #****************************#
     f_db_dbname STRING,
     f_msg STRING
 
-  LET f_dbpath = os.path.join(os.path.pwd(), f_dbname)
-  LET f_db_dbname = os.path.join("..","database")
-  LET f_db_dbname = os.path.join(base.Application.getProgramDir(),f_db_dbname)
-      
-  IF NOT os.path.exists(f_dbpath) #Check working directory for local.db
-  THEN
-    LET f_msg = "db missing, "
-    IF NOT os.path.exists(os.path.join(base.Application.getProgramDir(),f_dbname)) #Check app directory for local.db
+  IF global_config.application_db_external == TRUE
+  THEN #Local Database Conneciton
+    LET f_dbpath = os.path.join(os.path.pwd(), f_dbname)
+    LET f_db_dbname = os.path.join("..","database")
+    LET f_db_dbname = os.path.join(base.Application.getProgramDir(),f_db_dbname)
+        
+    IF NOT os.path.exists(f_dbpath) #Check working directory for local.db
     THEN
-      IF NOT os.path.exists(os.path.join(f_db_dbname,f_dbname)) # Check app/../databse for local.db
+      LET f_msg = "db missing, "
+      IF NOT os.path.exists(os.path.join(base.Application.getProgramDir(),f_dbname)) #Check app directory for local.db
       THEN
-        DISPLAY "FATAL ERROR: You don't have a database set up! Run the CreateDatabase application within the toolbox!"
-        EXIT PROGRAM 9999
+        IF NOT os.path.exists(os.path.join(f_db_dbname,f_dbname)) # Check app/../databse for local.db
+        THEN
+          DISPLAY "FATAL ERROR: You don't have a database set up! Run the CreateDatabase application within the toolbox!"
+          EXIT PROGRAM 9999
+        ELSE
+          IF os.path.copy(os.path.join(f_db_dbname,f_dbname), f_dbpath)
+          THEN
+            LET f_msg = f_msg.append("Copied ")
+          ELSE
+            LET f_msg = f_msg.append("Database Copy failed! ")
+          END IF
+        END IF
       ELSE
-        IF os.path.copy(os.path.join(f_db_dbname,f_dbname), f_dbpath)
+        IF os.path.copy(os.path.join(base.Application.getProgramDir(),f_dbname), f_dbpath)
         THEN
           LET f_msg = f_msg.append("Copied ")
         ELSE
@@ -707,27 +714,22 @@ FUNCTION openDB(f_dbname STRING,f_debug SMALLINT) #****************************#
         END IF
       END IF
     ELSE
-      IF os.path.copy(os.path.join(base.Application.getProgramDir(),f_dbname), f_dbpath)
-      THEN
-        LET f_msg = f_msg.append("Copied ")
-      ELSE
-        LET f_msg = f_msg.append("Database Copy failed! ")
-      END IF
+      LET f_msg = "db exists, "
     END IF
-  ELSE
-    LET f_msg = "db exists, "
-  END IF
-  TRY
-    DATABASE f_dbpath
-    LET f_msg = f_msg.append("Connected OK")
-    CALL check_database_version(FALSE)
-  CATCH
-    DISPLAY STATUS || " " || f_msg || SQLERRMESSAGE
-  END TRY
+    TRY
+      DATABASE f_dbpath
+      LET f_msg = f_msg.append("Connected OK")
+      CALL check_database_version(FALSE)
+    CATCH
+      DISPLAY STATUS || " " || f_msg || SQLERRMESSAGE
+    END TRY
 
-  IF f_debug = TRUE
-  THEN
-    DISPLAY f_msg
+    IF f_debug = TRUE
+    THEN
+      DISPLAY f_msg
+    END IF
+  ELSE #External Database Connection
+
   END IF
     
 END FUNCTION #*****************************************************************#

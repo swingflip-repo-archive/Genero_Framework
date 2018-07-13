@@ -1,4 +1,4 @@
-#Database set up
+#Default Database set up to SQLite3 local DB
 dbi.default.driver = "dbmsqt"
 dbi.database.local_db.source = "local_db.db"
 
