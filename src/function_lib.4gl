@@ -682,7 +682,7 @@ FUNCTION openDB(f_dbname STRING,f_debug SMALLINT) #****************************#
     f_db_dbname STRING,
     f_msg STRING
 
-  IF global_config.application_db_external == TRUE
+  IF global_config.application_db_external == FALSE
   THEN #Local Database Conneciton
     LET f_dbpath = os.path.join(os.path.pwd(), f_dbname)
     LET f_db_dbname = os.path.join("..","database")
@@ -729,7 +729,11 @@ FUNCTION openDB(f_dbname STRING,f_debug SMALLINT) #****************************#
       DISPLAY f_msg
     END IF
   ELSE #External Database Connection
-
+    TRY 
+      DATABASE global_config.application_db_external_dbname
+    CATCH
+      DISPLAY STATUS || " " || f_msg || SQLERRMESSAGE
+    END TRY
   END IF
     
 END FUNCTION #*****************************************************************#

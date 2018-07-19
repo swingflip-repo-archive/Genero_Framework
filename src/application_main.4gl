@@ -323,12 +323,12 @@ FUNCTION login_screen() #******************************************************#
         IF f_telephone IS NULL THEN LET f_telephone = " " END IF
                                                  
         CALL fgl_winmessage(%"common.string.Create_User",%"common.string.Status" || ": " || "OK" || "\n" ||
-                                                       %"common.per.Username" || ": " || f_username || "\n" ||
-                                                       %"common.per.Password" || ": " || f_password || "\n" ||
-                                                       %"common.string.Hashed_Password" || ": " || f_hashed_string || "\n" ||
-                                                       %"common.per.User_Type" || ": " || f_user_type || "\n" ||
-                                                       %"common.per.Email" || ": " || f_email || "\n" ||
-                                                       %"common.per.Telephone" || ": " || f_telephone, "information") 
+                                                         %"common.per.Username" || ": " || f_username || "\n" ||
+                                                         %"common.per.Password" || ": " || f_password || "\n" ||
+                                                         %"common.string.Hashed_Password" || ": " || f_hashed_string || "\n" ||
+                                                         %"common.per.User_Type" || ": " || f_user_type || "\n" ||
+                                                         %"common.per.Email" || ": " || f_email || "\n" ||
+                                                         %"common.per.Telephone" || ": " || f_telephone, "information") 
 
         LET global_var.instruction = "proceed"
     END INPUT

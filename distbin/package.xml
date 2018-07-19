@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Package distDir="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/distbin" name="Package_Android" rootDir="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin" version="1.0">
+  <DynamicProperties>
+    <DynamicProperty name="packageId" value="com.company.myapp"/>
+    <DynamicProperty name="packageLabel" value="MyApp"/>
+    <DynamicProperty name="packageVersion" value="1"/>
+    <DynamicProperty name="packageVersionName" value="1"/>
+    <DynamicProperty name="launchScreen" value=""/>
+    <DynamicProperty name="launchScreen750x1334" value=""/>
+    <DynamicProperty name="launchScreen1334x750" value=""/>
+    <DynamicProperty name="launchScreen1242x2208" value=""/>
+    <DynamicProperty name="launchScreen2208x1242" value=""/>
+    <DynamicProperty name="launchScreen1125x2436" value=""/>
+    <DynamicProperty name="launchScreen2436x1125" value=""/>
+    <DynamicProperty name="launchScreen768x1024" value=""/>
+    <DynamicProperty name="launchScreen1024x768" value=""/>
+    <DynamicProperty name="launchScreen1536x2048" value=""/>
+    <DynamicProperty name="launchScreen2048x1536" value=""/>
+    <DynamicProperty name="launchScreen2224x1668" value=""/>
+    <DynamicProperty name="launchScreen1668x2224" value=""/>
+    <DynamicProperty name="launchScreen2048x2732" value=""/>
+    <DynamicProperty name="launchScreen2732x2048" value=""/>
+    <DynamicProperty name="launchScreenXib" value=""/>
+    <DynamicProperty name="icon29x29" value=""/>
+    <DynamicProperty name="icon40x40" value=""/>
+    <DynamicProperty name="icon58x58" value=""/>
+    <DynamicProperty name="icon60x60" value=""/>
+    <DynamicProperty name="icon76x76" value=""/>
+    <DynamicProperty name="icon80x80" value=""/>
+    <DynamicProperty name="icon87x87" value=""/>
+    <DynamicProperty name="icon120x120" value=""/>
+    <DynamicProperty name="icon152x152" value=""/>
+    <DynamicProperty name="icon167x167" value=""/>
+    <DynamicProperty name="icon180x180" value=""/>
+    <DynamicProperty name="icon1024x1024" value=""/>
+    <DynamicProperty name="gma-primary-color" value="#5E35B1"/>
+    <DynamicProperty name="gma-primary-dark-color" value="#5E35B1"/>
+    <DynamicProperty name="gma-accent-color" value="#9575CD"/>
+    <DynamicProperty name="gma-actionbar-color" value="#EBEBEB"/>
+    <DynamicProperty name="gma-primaryText-color" value="#80000000"/>
+    <DynamicProperty name="gma-windowBackground-color" value="#ffffffff"/>
+    <DynamicProperty name="gma-navigationBarBackground-color" value="#5E35B1"/>
+    <DynamicProperty name="icon-ldpi" value=""/>
+    <DynamicProperty name="icon-mdpi" value=""/>
+    <DynamicProperty name="icon-hdpi" value=""/>
+    <DynamicProperty name="icon-xhdpi" value=""/>
+    <DynamicProperty name="icon-xxhdpi" value=""/>
+    <DynamicProperty name="status-icon-mdpi" value=""/>
+    <DynamicProperty name="status-icon-hdpi" value=""/>
+    <DynamicProperty name="status-icon-xhdpi" value=""/>
+    <DynamicProperty name="permissions" value="ACCESS_NETWORK_STATE||ACCESS_WIFI_STATE||CHANGE_NETWORK_STATE||INSTALL_SHORTCUT||INTERNET||MOUNT_FORMAT_FILESYSTEMS||READ_LOGS"/>
+    <DynamicProperty name="required" value="wifi"/>
+    <DynamicProperty name="gma-cordova" value=""/>
+    <DynamicProperty name="gmi-cordova" value=""/>
+  </DynamicProperties>
+  <Directories>
+    <Directory destination="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin" exclude="Test.42r" include="*.42?" name="Binaries" recursive="false" source="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin">
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin/Application.42r"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin/application_main.42m"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin/database_local_create.42m"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin/database_local_resync.42m"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin/function_lib.42m"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin/Library.42x"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin/login.42f"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin/main.42m"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin/splash_screen.42f"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin/tool_new_install.42f"/>
+    </Directory>
+    <Directory destination="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin" exclude="" include="fglprofile" name="Config" recursive="false" source="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/config">
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/config/fglprofile"/>
+    </Directory>
+    <Directory destination="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin" exclude="" include="*.db" name="Database" recursive="false" source="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/database">
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/database/local.db"/>
+    </Directory>
+    <Directory destination="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin" exclude="" include="*.png *.jpg *.ttf image2font.txt" name="Images" recursive="true" source="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/images">
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/images/128x128_blank.png"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/images/image2font.txt"/>
+    </Directory>
+    <Directory destination="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin" exclude="" include="*.42?" name="libdbapp" recursive="false" source="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin">
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbapp.42x"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbappCore.42m"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbappExt.42m"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbappFieldselectiondialog.42f"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbappFormUI.42m"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbappPrintSettings.42f"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbappReportCore.42m"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbappReportUI.42m"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbappSql.42m"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbappUI.42m"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbappWS.42m"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbappWSClient.42m"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/bin/libdbappWSCore.42m"/>
+    </Directory>
+    <Directory destination="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin" exclude="" include="*.42?" name="libgst" recursive="false" source="/Applications/Genero Studio 3.10.09-160228.app/Contents/MacOS/src/studio/lib/bin">
+      <File path="/Applications/Genero Studio 3.10.09-160228.app/Contents/MacOS/src/studio/lib/bin/db_sample_values.42m"/>
+      <File path="/Applications/Genero Studio 3.10.09-160228.app/Contents/MacOS/src/studio/lib/bin/libgst.42x"/>
+    </Directory>
+    <Directory destination="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin" exclude="" include="*.4ad *.4st *.4tm *.4tb *.4sm *.42s *.iem" name="Resources" recursive="false" source="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/resources">
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/resources/default.4ad"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/resources/default.4st"/>
+    </Directory>
+    <Directory destination="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin" exclude="" include="mobile_dbapp.4ad dbapp.4st" name="Resources_dbapp" recursive="false" source="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/styles">
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/styles/dbapp.4st"/>
+      <File path="/Users/ryanhamlin/.FourJs/Genero Studio 3.10.09-160228/tpl/dbapp4.1/styles/mobile_dbapp.4ad"/>
+    </Directory>
+    <Directory destination="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/bin/webcomponents" exclude="" include="*" name="Webcomponents" recursive="true" source="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/webcomponents">
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/webcomponents/.DS_Store"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/webcomponents/splash"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/webcomponents/splash/banner.png"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/webcomponents/splash/box.gif"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/webcomponents/splash/genero.png"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/webcomponents/splash/splash.css"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/webcomponents/splash/splash.html"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/webcomponents/splash/splash.js"/>
+      <File path="/Users/ryanhamlin/Documents/GitHub/Genero_Framework/webcomponents/splash/Thumbs.db"/>
+    </Directory>
+  </Directories>
+</Package>
