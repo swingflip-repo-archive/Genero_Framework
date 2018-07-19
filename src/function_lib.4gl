@@ -14,6 +14,7 @@ SCHEMA local
       application_db_external_config STRING,          #External DB config if using external DB (i.e. /etc/mysql/my.cnf)
       application_db_external_username STRING,        #External DB username if using external DB
       application_db_external_password STRING,        #External DB password if using external DB
+      application_db_external_extra_security SMALLINT,#Enable extra security on external DB (DB password displayed on new install)
       enable_geolocation SMALLINT,                    #Toggle to enable geolocation
       enable_mobile_title SMALLINT,                   #Toggle application title on mobile
       timed_checks_time INTEGER,                      #Time in seconds before running auto checks, uploads or refreshes (0 disables this globally)
@@ -141,6 +142,16 @@ FUNCTION initialize_publics() #************************************************#
   CALL f_channel.close() 
 
   CALL util.JSON.parse( f_string_line, global_config)
+
+  #Extra Security (Not fool proof but prevents basic hacking)
+  IF global_config.application_db_external = TRUE AND global_config.application_db_external_extra_security = TRUE
+  THEN 
+    CALL Generate_Hash(global_config.application_db_external_password ||
+                       global_config.application_db_external_dbname ||
+                       global_config.application_db_external_username, "SHA256") 
+      RETURNING global_config.application_db_external_password
+    #CALL fgl_winmessage("Hashed Value",global_config.application_db_external_password,"information") #Comment when not in use!
+  END IF
 
   RETURN TRUE
     
@@ -531,7 +542,29 @@ END FUNCTION #*****************************************************************#
 #
 #
 #
-FUNCTION set_localised_image(f_image STRING)
+FUNCTION Generate_Hash(f_string STRING, f_algo STRING) #***********************#
+  RETURNS STRING
+  
+  DEFINE f_digest security.Digest,
+         f_result STRING
+
+  TRY
+    LET f_digest = security.Digest.CreateDigest(f_algo)
+    CALL f_digest.AddStringData(f_string)
+    LET f_result = f_digest.DoBase64Digest()
+  CATCH
+    DISPLAY "ERROR: FAILED TO HASH: " || STATUS || " " || SQLERRMESSAGE
+    EXIT PROGRAM 9999
+  END TRY
+
+  RETURN f_result
+  
+END FUNCTION #*****************************************************************#
+#
+#
+#
+#
+FUNCTION set_localised_image(f_image STRING) #*********************************#
   RETURNS STRING
   
   IF global_config.default_language.toUpperCase() = global_var.language_short.toUpperCase()
@@ -546,7 +579,7 @@ FUNCTION set_localised_image(f_image STRING)
     
   RETURN f_image #We should never reach this point but just incase...
     
-END FUNCTION
+END FUNCTION #*****************************************************************#
 #
 #
 #
