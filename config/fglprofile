@@ -1,14 +1,6 @@
 #Default Database set up to SQLite3 local DB
 dbi.default.driver = "dbmsqt"
 
-#Improve this using qthelp://genero/gst_docbooks/fgl/fgl-topics/c_fgl_Connections_006.html
-#External Database config (application_db_external = 1 and application_db_external_dbname is set)
-dbi.database.genero_template.source = "Genero_Template"
-dbi.database.genero_template.driver = "dbmmys_5_5"
-dbi.database.genero_template.config = "/etc/mysql/my.cnf"
-dbi.database.genero_template.username = "genero_framework"
-dbi.database.genero_template.password = "3WRYn8&Xx,hTg5:`"
-
 #Application localisation
 fglrun.localization.file.count = 3
 fglrun.localization.file.1.name = "common_per.42s"

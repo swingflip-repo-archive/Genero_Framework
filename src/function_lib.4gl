@@ -10,6 +10,10 @@ SCHEMA local
       application_db_ver INTEGER,                     #Application Database Version
       application_db_external SMALLINT,               #Toggle to use external DB or local.db
       application_db_external_dbname STRING,          #External DB name if using external DB (Ties into config within FGLPROFILE)
+      application_db_external_driver STRING,          #External DB driver if using external DB (dbmmys_5_5 (mariaDB))
+      application_db_external_config STRING,          #External DB config if using external DB (i.e. /etc/mysql/my.cnf)
+      application_db_external_username STRING,        #External DB username if using external DB
+      application_db_external_password STRING,        #External DB password if using external DB
       enable_geolocation SMALLINT,                    #Toggle to enable geolocation
       enable_mobile_title SMALLINT,                   #Toggle application title on mobile
       timed_checks_time INTEGER,                      #Time in seconds before running auto checks, uploads or refreshes (0 disables this globally)
@@ -680,7 +684,8 @@ FUNCTION openDB(f_dbname STRING,f_debug SMALLINT) #****************************#
   DEFINE 
     f_dbpath STRING,
     f_db_dbname STRING,
-    f_msg STRING
+    f_msg STRING,
+    f_ext_connection STRING
 
   IF global_config.application_db_external == FALSE
   THEN #Local Database Conneciton
@@ -728,9 +733,15 @@ FUNCTION openDB(f_dbname STRING,f_debug SMALLINT) #****************************#
     THEN
       DISPLAY f_msg
     END IF
-  ELSE #External Database Connection
+  ELSE
+    LET f_ext_connection = global_config.application_db_external_dbname ||
+                           "+driver='"    || global_config.application_db_external_driver   ||
+                           "',source='"   || global_config.application_db_external_dbname   ||
+                           "',username='" || global_config.application_db_external_username ||
+                           "',password='" || global_config.application_db_external_password || "'"
+      
     TRY 
-      DATABASE global_config.application_db_external_dbname
+      DATABASE f_ext_connection
     CATCH
       DISPLAY STATUS || " " || f_msg || SQLERRMESSAGE
     END TRY

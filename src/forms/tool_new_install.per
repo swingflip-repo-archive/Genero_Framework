@@ -20,13 +20,13 @@ END #VBOX
 END  #LAYOUT
 
 ATTRIBUTES
-EDIT username=FORMONLY.username, PLACEHOLDER=%"common.per.Username", JUSTIFY=LEFT;
-EDIT password=FORMONLY.password, INVISIBLE, PLACEHOLDER=%"common.per.Password", JUSTIFY=LEFT;
-EDIT confirm_password=FORMONLY.confirm_password, INVISIBLE, PLACEHOLDER=%"common.per.Confirm_Password", JUSTIFY=LEFT;
+EDIT username=FORMONLY.username, SCROLL, PLACEHOLDER=%"common.per.Username", JUSTIFY=LEFT;
+EDIT password=FORMONLY.password, INVISIBLE, SCROLL, PLACEHOLDER=%"common.per.Password", JUSTIFY=LEFT;
+EDIT confirm_password=FORMONLY.confirm_password, INVISIBLE, SCROLL, PLACEHOLDER=%"common.per.Confirm_Password", JUSTIFY=LEFT;
 COMBOBOX user_type=FORMONLY.user_type, PLACEHOLDER=%"common.per.User_Type", NOT NULL, JUSTIFY=LEFT, ITEMS = (("ADMIN","Admin"), ("USER1","User Group A"),
                                                                                                             ("USER2","User Group B"), ("USER3","User Group C"));
-EDIT email=FORMONLY.email, PLACEHOLDER=%"common.per.Email", JUSTIFY=LEFT;
-EDIT telephone=FORMONLY.telephone, PLACEHOLDER=%"common.per.Telephone", JUSTIFY=LEFT;                                                                                           
+EDIT email=FORMONLY.email, SCROLL, PLACEHOLDER=%"common.per.Email", JUSTIFY=LEFT;
+EDIT telephone=FORMONLY.telephone, SCROLL, PLACEHOLDER=%"common.per.Telephone", JUSTIFY=LEFT;                                                                                           
 IMAGE spacer: spacer1, IMAGE="128x128_blank.png",STRETCH=BOTH, STYLE="noBorder";
 BUTTON bt_submit : bt_submit, TEXT=%"common.per.Submit";
 
