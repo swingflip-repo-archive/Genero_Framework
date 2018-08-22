@@ -8,4 +8,5 @@ Thumbs.db
 #Build Folders
 bin/
 dbbin/
+distbin/
 *.gar
